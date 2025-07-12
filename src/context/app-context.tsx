@@ -1,7 +1,8 @@
+
 "use client";
 
 import type { ReactNode } from 'react';
-import { createContext, useContext, useState, useMemo } from 'react';
+import { createContext, useContext, useState, useMemo, useEffect } from 'react';
 import type { UserProfile, WeightEntry, GlucoseLog, MealType } from '@/lib/types';
 import { subDays, formatISO } from 'date-fns';
 
@@ -18,7 +19,7 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-// Mock data
+// Mock data generation functions
 const generateMockLogs = (): GlucoseLog[] => {
   const logs: GlucoseLog[] = [];
   const mealTypes: MealType[] = ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Fasting'];
@@ -56,8 +57,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     birthdate: '1990-05-15',
     height: 175,
   });
-  const [weightHistory, setWeightHistory] = useState<WeightEntry[]>(generateMockWeight());
-  const [glucoseLogs, setGlucoseLogs] = useState<GlucoseLog[]>(generateMockLogs());
+  const [weightHistory, setWeightHistory] = useState<WeightEntry[]>([]);
+  const [glucoseLogs, setGlucoseLogs] = useState<GlucoseLog[]>([]);
+
+  useEffect(() => {
+    setWeightHistory(generateMockWeight());
+    setGlucoseLogs(generateMockLogs());
+  }, []); // Empty dependency array ensures this runs once on mount, only on the client.
 
   const updateProfile = (newProfile: Partial<UserProfile>) => {
     setProfile(p => ({ ...p, ...newProfile }));
