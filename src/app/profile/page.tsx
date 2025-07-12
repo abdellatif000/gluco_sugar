@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -23,7 +22,11 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Calendar, User, Scale, Loader2 } from 'lucide-react';
+import { Calendar, User, Scale, Loader2, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import type { WeightEntry } from '@/lib/types';
 
 
 const profileSchema = z.object({
@@ -38,32 +41,39 @@ const weightSchema = z.object({
   weight: z.coerce.number().min(1, "Weight must be positive."),
 });
 
+const editWeightSchema = z.object({
+  id: z.string(),
+  date: z.string(),
+  weight: z.coerce.number().min(1, "Weight must be positive."),
+});
+
 export default function ProfilePage() {
-  const { profile, weightHistory, updateProfile, addWeightEntry } = useApp();
+  const { profile, weightHistory, updateProfile, addWeightEntry, updateWeightEntry, deleteWeightEntry } = useApp();
   const { toast } = useToast();
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   
+  const [editingWeight, setEditingWeight] = useState<WeightEntry | null>(null);
+  const [deletingWeightId, setDeletingWeightId] = useState<string | null>(null);
+
   const latestWeight = weightHistory[0]?.weight;
   const bmi = profile ? calculateBMI(profile.height, latestWeight) : null;
   const age = profile ? calculateAge(profile.birthdate) : null;
 
   const profileForm = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
-    defaultValues: {
-      name: '',
-      height: 0,
-      birthdate: '',
-    },
+    defaultValues: { name: '', height: 0, birthdate: '' }
   });
 
   const weightForm = useForm<z.infer<typeof weightSchema>>({
     resolver: zodResolver(weightSchema),
-    defaultValues: {
-      weight: 0,
-    },
+    defaultValues: { weight: 0 }
   });
   
+  const editWeightForm = useForm<z.infer<typeof editWeightSchema>>({
+    resolver: zodResolver(editWeightSchema),
+  });
+
   const resetProfileForm = () => {
     if (profile) {
       profileForm.reset({
@@ -79,7 +89,7 @@ export default function ProfilePage() {
       resetProfileForm();
     }
     if(latestWeight) {
-        weightForm.reset({ weight: latestWeight });
+        weightForm.reset({ weight: latestWeight || 0 });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile, latestWeight]);
@@ -89,7 +99,7 @@ export default function ProfilePage() {
     try {
       await updateProfile(data);
       toast({ title: 'Success', description: 'Profile updated.' });
-      setIsEditing(false);
+      setIsEditingProfile(false);
     } catch (error: any) {
         toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } finally {
@@ -102,6 +112,29 @@ export default function ProfilePage() {
     toast({ title: 'Success', description: 'New weight entry added.' });
     weightForm.reset({ weight: data.weight });
   };
+
+  const handleEditWeight = (entry: WeightEntry) => {
+    setEditingWeight(entry);
+    editWeightForm.reset({
+      id: entry.id,
+      date: entry.date,
+      weight: entry.weight
+    });
+  };
+
+  const onEditWeightSubmit = (data: z.infer<typeof editWeightSchema>) => {
+    updateWeightEntry(data);
+    toast({ title: 'Success', description: 'Weight entry updated.' });
+    setEditingWeight(null);
+  };
+  
+  const confirmDeleteWeight = () => {
+    if (deletingWeightId) {
+      deleteWeightEntry(deletingWeightId);
+      toast({ title: 'Success', description: 'Weight entry deleted.' });
+      setDeletingWeightId(null);
+    }
+  };
   
   if (!profile) return (
     <AppLayout>
@@ -110,7 +143,6 @@ export default function ProfilePage() {
         </div>
     </AppLayout>
   );
-
 
   return (
     <AppLayout>
@@ -131,7 +163,7 @@ export default function ProfilePage() {
                                 <FormItem>
                                     <FormLabel>Name</FormLabel>
                                     <FormControl>
-                                    <Input {...field} readOnly={!isEditing} className={!isEditing ? 'border-none bg-transparent p-0 shadow-none h-auto' : ''}/>
+                                    <Input {...field} readOnly={!isEditingProfile} className={!isEditingProfile ? 'border-none bg-transparent p-0 shadow-none h-auto' : ''}/>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -144,7 +176,7 @@ export default function ProfilePage() {
                                 <FormItem>
                                     <FormLabel>Birthdate</FormLabel>
                                     <FormControl>
-                                      {isEditing ? (
+                                      {isEditingProfile ? (
                                         <Input type="date" {...field} />
                                       ) : (
                                         <p className="text-sm pt-2">{profile.birthdate ? `${format(new Date(profile.birthdate), 'PPP')} (${age} years old)` : 'Not set'}</p>
@@ -161,23 +193,23 @@ export default function ProfilePage() {
                                 <FormItem>
                                     <FormLabel>Height (cm)</FormLabel>
                                     <FormControl>
-                                    <Input type="number" {...field} readOnly={!isEditing} className={!isEditing ? 'border-none bg-transparent p-0 shadow-none h-auto' : ''}/>
+                                    <Input type="number" {...field} readOnly={!isEditingProfile} className={!isEditingProfile ? 'border-none bg-transparent p-0 shadow-none h-auto' : ''}/>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
                                 )}
                             />
                             <div className="flex justify-end gap-2 pt-2">
-                                {isEditing ? (
+                                {isEditingProfile ? (
                                     <>
-                                        <Button variant="outline" onClick={() => { setIsEditing(false); resetProfileForm(); }}>Cancel</Button>
+                                        <Button variant="outline" onClick={() => { setIsEditingProfile(false); resetProfileForm(); }}>Cancel</Button>
                                         <Button type="submit" disabled={isSaving}>
                                             {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                                             Save
                                         </Button>
                                     </>
                                 ) : (
-                                    <Button variant="outline" onClick={() => setIsEditing(true)}>Edit Profile</Button>
+                                    <Button variant="outline" onClick={() => setIsEditingProfile(true)}>Edit Profile</Button>
                                 )}
                             </div>
                         </form>
@@ -229,6 +261,7 @@ export default function ProfilePage() {
                             <TableRow>
                                 <TableHead>Date</TableHead>
                                 <TableHead className="text-right">Weight (kg)</TableHead>
+                                <TableHead><span className="sr-only">Actions</span></TableHead>
                             </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -236,6 +269,24 @@ export default function ProfilePage() {
                                 <TableRow key={entry.id}>
                                 <TableCell>{format(new Date(entry.date), 'PPP')}</TableCell>
                                 <TableCell className="text-right">{entry.weight.toFixed(1)}</TableCell>
+                                <TableCell className="text-right">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button aria-haspopup="true" size="icon" variant="ghost">
+                                            <MoreHorizontal className="h-4 w-4" />
+                                            <span className="sr-only">Toggle menu</span>
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onSelect={() => handleEditWeight(entry)} className="flex items-center gap-2">
+                                                <Pencil className="h-4 w-4" /> Edit
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => setDeletingWeightId(entry.id)} className="flex items-center gap-2 text-destructive">
+                                                <Trash2 className="h-4 w-4" /> Delete
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </TableCell>
                                 </TableRow>
                             ))}
                             </TableBody>
@@ -249,6 +300,51 @@ export default function ProfilePage() {
           </Form>
         </Card>
       </div>
+
+      <Dialog open={!!editingWeight} onOpenChange={(open) => !open && setEditingWeight(null)}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Edit Weight Entry</DialogTitle>
+                <DialogDescription>Update the weight for {editingWeight ? format(new Date(editingWeight.date), 'PPP') : ''}.</DialogDescription>
+            </DialogHeader>
+            <Form {...editWeightForm}>
+                <form onSubmit={editWeightForm.handleSubmit(onEditWeightSubmit)} className="space-y-4 py-4">
+                    <FormField
+                        control={editWeightForm.control}
+                        name="weight"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Weight (kg)</FormLabel>
+                                <FormControl>
+                                    <Input type="number" step="0.1" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <DialogFooter>
+                        <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
+                        <Button type="submit">Save Changes</Button>
+                    </DialogFooter>
+                </form>
+            </Form>
+        </DialogContent>
+      </Dialog>
+      
+      <AlertDialog open={!!deletingWeightId} onOpenChange={(open) => !open && setDeletingWeightId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the weight entry.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeletingWeightId(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteWeight}>Continue</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
   );
 }

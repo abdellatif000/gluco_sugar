@@ -42,6 +42,8 @@ interface AppContextType {
   logout: () => Promise<void>;
   updateProfile: (profile: Partial<UserProfile>) => Promise<void>;
   addWeightEntry: (weight: number) => Promise<void>;
+  updateWeightEntry: (entry: WeightEntry) => Promise<void>;
+  deleteWeightEntry: (id: string) => Promise<void>;
   addGlucoseLog: (log: Omit<GlucoseLog, 'id' | 'timestamp'> & { timestamp?: string }) => Promise<void>;
   updateGlucoseLog: (log: GlucoseLog) => Promise<void>;
   deleteGlucoseLog: (id: string) => Promise<void>;
@@ -140,8 +142,28 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const addWeightEntry = async (weight: number) => {
     if (!user) throw new Error("User not authenticated.");
     const newEntry: WeightEntry = { id: `weight_${Date.now()}`, weight, date: formatISO(new Date()) };
-    weightHistoryStore[user.id] = [newEntry, ...(weightHistoryStore[user.id] || [])];
-    setWeightHistory(weightHistoryStore[user.id]);
+    const sortedHistory = [newEntry, ...(weightHistoryStore[user.id] || [])]
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    weightHistoryStore[user.id] = sortedHistory;
+    setWeightHistory(sortedHistory);
+  };
+
+  const updateWeightEntry = async (updatedEntry: WeightEntry) => {
+    if (!user) throw new Error("User not authenticated.");
+    const sortedHistory = (weightHistoryStore[user.id] || [])
+      .map(entry => entry.id === updatedEntry.id ? updatedEntry : entry)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    weightHistoryStore[user.id] = sortedHistory;
+    setWeightHistory(sortedHistory);
+  };
+
+  const deleteWeightEntry = async (id: string) => {
+    if (!user) throw new Error("User not authenticated.");
+    const sortedHistory = (weightHistoryStore[user.id] || [])
+      .filter(entry => entry.id !== id)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    weightHistoryStore[user.id] = sortedHistory;
+    setWeightHistory(sortedHistory);
   };
   
   const addGlucoseLog = async (log: Omit<GlucoseLog, 'id' | 'timestamp'> & { timestamp?: string }) => {
@@ -151,20 +173,28 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       ...log,
       timestamp: log.timestamp || formatISO(new Date()),
     };
-    glucoseLogsStore[user.id] = [newLog, ...(glucoseLogsStore[user.id] || [])];
-    setGlucoseLogs(glucoseLogsStore[user.id]);
+    const sortedLogs = [newLog, ...(glucoseLogsStore[user.id] || [])]
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    glucoseLogsStore[user.id] = sortedLogs;
+    setGlucoseLogs(sortedLogs);
   };
   
   const updateGlucoseLog = async (updatedLog: GlucoseLog) => {
     if (!user) throw new Error("User not authenticated.");
-    glucoseLogsStore[user.id] = (glucoseLogsStore[user.id] || []).map(log => log.id === updatedLog.id ? updatedLog : log);
-    setGlucoseLogs(glucoseLogsStore[user.id]);
+    const sortedLogs = (glucoseLogsStore[user.id] || [])
+        .map(log => log.id === updatedLog.id ? updatedLog : log)
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    glucoseLogsStore[user.id] = sortedLogs;
+    setGlucoseLogs(sortedLogs);
   };
   
   const deleteGlucoseLog = async (id: string) => {
     if (!user) throw new Error("User not authenticated.");
-    glucoseLogsStore[user.id] = (glucoseLogsStore[user.id] || []).filter(log => log.id !== id);
-    setGlucoseLogs(glucoseLogsStore[user.id]);
+    const sortedLogs = (glucoseLogsStore[user.id] || [])
+        .filter(log => log.id !== id)
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    glucoseLogsStore[user.id] = sortedLogs;
+    setGlucoseLogs(sortedLogs);
   };
 
   const contextValue = useMemo(() => ({
@@ -178,9 +208,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     logout,
     updateProfile: updateProfileData,
     addWeightEntry,
+    updateWeightEntry,
+    deleteWeightEntry,
     addGlucoseLog,
     updateGlucoseLog,
     deleteGlucoseLog,
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [profile, weightHistory, glucoseLogs, authState, user]);
 
   return (
