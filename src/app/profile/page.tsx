@@ -49,9 +49,9 @@ const editWeightSchema = z.object({
 });
 
 const DetailRow = ({ label, value, isEditing, children }: { label: string, value: React.ReactNode, isEditing: boolean, children: React.ReactNode }) => (
-    <div className="grid grid-cols-3 items-center gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-2 md:gap-4">
         <FormLabel className="text-muted-foreground col-span-1">{label}</FormLabel>
-        <div className="col-span-2">
+        <div className="md:col-span-2">
             {isEditing ? children : <div className="text-sm py-2">{value}</div>}
         </div>
     </div>
@@ -186,7 +186,7 @@ export default function ProfilePage() {
     <AppLayout>
       <div className="grid gap-6 md:grid-cols-2">
         <div className="flex flex-col gap-6">
-            <Card>
+            <Card className="bg-glass">
                 <CardHeader>
                 <CardTitle>User Details</CardTitle>
                 <CardDescription>Your personal information.</CardDescription>
@@ -248,7 +248,7 @@ export default function ProfilePage() {
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-glass">
                 <CardHeader>
                 <CardTitle>Health Metrics</CardTitle>
                 <CardDescription>Calculated based on your data.</CardDescription>
@@ -264,7 +264,7 @@ export default function ProfilePage() {
             </Card>
         </div>
 
-        <Card>
+        <Card className="bg-glass">
           <CardHeader>
             <CardTitle>Weight Management</CardTitle>
             <CardDescription>Track your weekly weight.</CardDescription>
@@ -353,7 +353,7 @@ export default function ProfilePage() {
       </div>
 
       <Dialog open={!!editingWeight} onOpenChange={(open) => !open && setEditingWeight(null)}>
-        <DialogContent>
+        <DialogContent className="bg-glass-popover">
             <DialogHeader>
                 <DialogTitle>Edit Weight Entry</DialogTitle>
                 <DialogDescription>Update the weight for {editingWeight ? format(new Date(editingWeight.date), 'PPP') : ''}.</DialogDescription>
@@ -383,7 +383,7 @@ export default function ProfilePage() {
       </Dialog>
       
       <AlertDialog open={!!deletingWeightId} onOpenChange={(open) => !open && setDeletingWeightId(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-glass-popover">
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>

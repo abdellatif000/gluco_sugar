@@ -48,7 +48,7 @@ export default function RemindersPage() {
 
   return (
     <AppLayout>
-      <Card>
+      <Card className="bg-glass">
         <CardHeader>
           <CardTitle>Smart Reminders</CardTitle>
           <CardDescription>
@@ -84,7 +84,7 @@ export default function RemindersPage() {
                 }
 
                 return (
-                    <Alert key={index} variant={variant}>
+                    <Alert key={index} variant={variant} className="bg-glass">
                         <Icon className="h-4 w-4" />
                         <AlertTitle>{reminder.time}</AlertTitle>
                         <AlertDescription>{reminder.message}</AlertDescription>
@@ -95,7 +95,7 @@ export default function RemindersPage() {
           )}
 
           {!isPending && reminders.length === 0 && (
-            <Alert>
+            <Alert className="bg-glass">
               <Lightbulb className="h-4 w-4" />
               <AlertTitle>Ready to get started?</AlertTitle>
               <AlertDescription>

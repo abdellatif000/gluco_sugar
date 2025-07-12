@@ -66,13 +66,13 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+    <div className="flex min-h-screen items-center justify-center bg-transparent p-4">
       <div className="w-full max-w-md">
          <div className="flex justify-center items-center gap-2 mb-6">
             <HeartPulse className="h-8 w-8 text-primary" />
             <h1 className="text-3xl font-bold text-primary">GlucoTrack</h1>
         </div>
-        <Card>
+        <Card className="bg-glass">
             <CardHeader className="text-center">
                 <CardTitle className="text-2xl">Create an Account</CardTitle>
                 <CardDescription>Join us to start tracking your health.</CardDescription>

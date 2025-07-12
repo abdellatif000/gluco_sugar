@@ -34,7 +34,7 @@ export default function ReportsPage() {
 
   return (
     <AppLayout>
-      <Card>
+      <Card className="bg-glass">
         <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
             <CardTitle>Glucose Trends</CardTitle>
@@ -80,6 +80,8 @@ export default function ReportsPage() {
                         contentStyle={{
                             backgroundColor: 'hsl(var(--card))',
                             borderColor: 'hsl(var(--border))',
+                            background: 'hsla(var(--card) / 0.75)',
+                            backdropFilter: 'blur(12px)',
                         }}
                     />
                     <Line 

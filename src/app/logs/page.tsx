@@ -122,7 +122,7 @@ export default function LogsPage() {
 
   return (
     <AppLayout>
-      <Card>
+      <Card className="bg-glass">
         <CardHeader className="flex flex-row items-center justify-between">
             <div>
                 <CardTitle>Glucose Logs</CardTitle>
@@ -203,7 +203,7 @@ export default function LogsPage() {
       </Card>
 
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent>
+        <SheetContent className="bg-glass-popover">
           <SheetHeader>
             <SheetTitle>{editingLog ? 'Edit' : 'Add'} Glucose Log</SheetTitle>
             <SheetDescription>
@@ -287,7 +287,7 @@ export default function LogsPage() {
       </Sheet>
 
       <AlertDialog open={!!deletingLogId} onOpenChange={(open) => !open && setDeletingLogId(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-glass-popover">
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
