@@ -42,6 +42,14 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
+  const form = useForm<FormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    }
+  });
+
   useEffect(() => {
     if (authState === 'loggedIn') {
       router.push('/');
@@ -53,7 +61,7 @@ export default function LoginPage() {
     setIsSubmitting(true);
     try {
       await login(data.email, data.password);
-      router.push('/');
+      // router.push('/'); // This is now handled by the useEffect
     } catch (err: any) {
       setError(err.message);
     } finally {

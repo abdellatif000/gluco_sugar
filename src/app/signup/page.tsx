@@ -43,6 +43,15 @@ export default function SignupPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
+  const form = useForm<FormData>({
+    resolver: zodResolver(signupSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+    },
+  });
+
   useEffect(() => {
     if (authState === 'loggedIn') {
       router.push('/');
@@ -54,7 +63,7 @@ export default function SignupPage() {
     setIsSubmitting(true);
     try {
       await signup(data.email, data.password, data.name);
-      router.push('/');
+      // router.push('/'); // This is now handled by the useEffect
     } catch (err: any) {
       setError(err.message);
     } finally {
