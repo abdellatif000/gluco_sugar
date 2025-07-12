@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -38,19 +38,16 @@ const signupSchema = z.object({
 type FormData = z.infer<typeof signupSchema>;
 
 export default function SignupPage() {
-  const { signup } = useApp();
+  const { signup, authState } = useApp();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  const form = useForm<FormData>({
-    resolver: zodResolver(signupSchema),
-    defaultValues: {
-      name: '',
-      email: '',
-      password: '',
-    },
-  });
+  useEffect(() => {
+    if (authState === 'loggedIn') {
+      router.push('/');
+    }
+  }, [authState, router]);
 
   const onSubmit = async (data: FormData) => {
     setError(null);
@@ -64,6 +61,14 @@ export default function SignupPage() {
       setIsSubmitting(false);
     }
   };
+
+  if (authState === 'loading' || authState === 'loggedIn') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-transparent">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-transparent p-4">
