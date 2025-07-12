@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -21,10 +22,11 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Calendar, User, Scale } from 'lucide-react';
+import { Calendar, User, Scale, Loader2 } from 'lucide-react';
 
 
 const profileSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters."),
   height: z.coerce.number().min(1, "Height must be positive."),
 });
 
@@ -36,6 +38,7 @@ export default function ProfilePage() {
   const { profile, weightHistory, updateProfile, addWeightEntry } = useApp();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   
   const latestWeight = weightHistory[0]?.weight;
   const bmi = calculateBMI(profile.height, latestWeight);
@@ -44,6 +47,7 @@ export default function ProfilePage() {
   const profileForm = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
+      name: profile.name,
       height: profile.height,
     },
   });
@@ -54,11 +58,25 @@ export default function ProfilePage() {
       weight: latestWeight || 0,
     },
   });
+  
+  useEffect(() => {
+    profileForm.reset({
+        name: profile.name,
+        height: profile.height,
+    });
+  }, [profile, profileForm]);
 
-  const onProfileSubmit = (data: z.infer<typeof profileSchema>) => {
-    updateProfile(data);
-    toast({ title: 'Success', description: 'Profile updated.' });
-    setIsEditing(false);
+  const onProfileSubmit = async (data: z.infer<typeof profileSchema>) => {
+    setIsSaving(true);
+    try {
+      await updateProfile(data);
+      toast({ title: 'Success', description: 'Profile updated.' });
+      setIsEditing(false);
+    } catch (error: any) {
+        toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } finally {
+        setIsSaving(false);
+    }
   };
 
   const onWeightSubmit = (data: z.infer<typeof weightSchema>) => {
@@ -77,41 +95,54 @@ export default function ProfilePage() {
                 <CardDescription>Your personal information.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <User className="h-5 w-5 text-muted-foreground" />
-                  <span className="font-medium">Name:</span>
-                  <span>{profile.name}</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <Calendar className="h-5 w-5 text-muted-foreground" />
-                  <span className="font-medium">Birthdate:</span>
-                  <span>{format(new Date(profile.birthdate), 'PPP')} ({age} years old)</span>
-                </div>
-                <Form {...profileForm}>
-                    <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="flex items-end gap-4">
-                    <FormField
-                        control={profileForm.control}
-                        name="height"
-                        render={({ field }) => (
-                        <FormItem className="flex-grow">
-                            <FormLabel>Height (cm)</FormLabel>
-                            <FormControl>
-                            <Input type="number" {...field} readOnly={!isEditing} className={!isEditing ? 'border-none bg-transparent p-0 shadow-none' : ''}/>
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                    {isEditing ? (
-                        <div className="flex gap-2">
-                            <Button type="submit">Save</Button>
-                            <Button variant="outline" onClick={() => { setIsEditing(false); profileForm.reset({ height: profile.height }); }}>Cancel</Button>
-                        </div>
-                    ) : (
-                        <Button variant="outline" onClick={() => setIsEditing(true)}>Edit</Button>
-                    )}
-                    </form>
-                </Form>
+                    <Form {...profileForm}>
+                        <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-4">
+                            <FormField
+                                control={profileForm.control}
+                                name="name"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Name</FormLabel>
+                                    <FormControl>
+                                    <Input {...field} readOnly={!isEditing} className={!isEditing ? 'border-none bg-transparent p-0 shadow-none h-auto' : ''}/>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                             <div className="flex items-center gap-4">
+                                <Calendar className="h-5 w-5 text-muted-foreground" />
+                                <span className="font-medium text-sm">Birthdate:</span>
+                                <span className="text-sm">{profile.birthdate ? `${format(new Date(profile.birthdate), 'PPP')} (${age} years old)` : 'Not set'}</span>
+                            </div>
+                            <FormField
+                                control={profileForm.control}
+                                name="height"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Height (cm)</FormLabel>
+                                    <FormControl>
+                                    <Input type="number" {...field} readOnly={!isEditing} className={!isEditing ? 'border-none bg-transparent p-0 shadow-none h-auto' : ''}/>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                            <div className="flex justify-end gap-2 pt-2">
+                                {isEditing ? (
+                                    <>
+                                        <Button variant="outline" onClick={() => { setIsEditing(false); profileForm.reset({ name: profile.name, height: profile.height }); }}>Cancel</Button>
+                                        <Button type="submit" disabled={isSaving}>
+                                            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                                            Save
+                                        </Button>
+                                    </>
+                                ) : (
+                                    <Button variant="outline" onClick={() => setIsEditing(true)}>Edit Profile</Button>
+                                )}
+                            </div>
+                        </form>
+                    </Form>
                 </CardContent>
             </Card>
 

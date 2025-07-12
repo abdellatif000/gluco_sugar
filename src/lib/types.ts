@@ -1,3 +1,5 @@
+import type { User as FirebaseUser } from 'firebase/auth';
+
 export type MealType = 'Breakfast' | 'Lunch' | 'Dinner' | 'Snack' | 'Fasting';
 
 export interface GlucoseLog {
@@ -18,4 +20,9 @@ export interface UserProfile {
   name: string;
   birthdate: string; // ISO string
   height: number; // in cm
+  email: string;
 }
+
+export type AuthState = 'loading' | 'loggedIn' | 'loggedOut';
+
+export type AppUser = FirebaseUser;
