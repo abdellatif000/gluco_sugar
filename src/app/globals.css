@@ -4,44 +4,62 @@
 
 @layer base {
   :root {
-    --background: 180 100% 98%;
+    --background: 180 100% 97%; /* Very Pale Cyan */
     --foreground: 224 71% 4%;
-    --card: 180 100% 94%;
+
+    --card: 0 0% 100%;
     --card-foreground: 224 71% 4%;
-    --popover: 180 100% 98%;
+
+    --popover: 0 0% 100%;
     --popover-foreground: 224 71% 4%;
-    --primary: 197 90% 48%;
-    --primary-foreground: 224 71% 4%;
-    --secondary: 276 30% 96%;
-    --secondary-foreground: 224 71% 4%;
-    --muted: 180 20% 94%;
-    --muted-foreground: 224 71% 35%;
-    --accent: 276 27% 90%;
-    --accent-foreground: 224 71% 4%;
+
+    --primary: 197 90% 48%; /* Light Sky Blue */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 276 60% 95%; /* Pale Violet */
+    --accent-foreground: 222.2 47.4% 11.2%;
+
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 197 20% 85%;
-    --input: 197 20% 88%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
     --ring: 197 90% 48%;
+    
+    --radius: 0.5rem;
   }
  
   .dark {
     --background: 220 15% 5%;
-    --foreground: 180 100% 94%;
+    --foreground: 180 20% 98%;
+
     --card: 220 15% 10%;
-    --card-foreground: 180 100% 94%;
+    --card-foreground: 180 20% 98%;
+
     --popover: 220 15% 7%;
-    --popover-foreground: 180 100% 94%;
+    --popover-foreground: 180 20% 98%;
+
     --primary: 197 71% 73%;
-    --primary-foreground: 224 71% 4%;
-    --secondary: 276 27% 15%;
-    --secondary-foreground: 180 100% 94%;
+    --primary-foreground: 197 90% 5%;
+    
+    --secondary: 220 15% 15%;
+    --secondary-foreground: 180 20% 98%;
+    
     --muted: 220 15% 15%;
-    --muted-foreground: 180 100% 80%;
+    --muted-foreground: 180 20% 80%;
+
     --accent: 276 27% 25%;
-    --accent-foreground: 180 100% 94%;
+    --accent-foreground: 180 20% 98%;
+    
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 0 85.7% 97.3%;
+    
     --border: 220 15% 25%;
     --input: 220 15% 22%;
     --ring: 197 71% 73%;
@@ -57,48 +75,4 @@
     font-feature-settings: "rlig" 1, "calt" 1;
     min-height: 100vh;
   }
-  
-  body::before {
-    content: '';
-    position: fixed;
-    top: -10px;
-    left: -10px;
-    right: -10px;
-    bottom: -10px;
-    background-image: url('https://plus.unsplash.com/premium_photo-1661578947517-e292bf6cea5e?q=80&w=3520&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    filter: blur(8px) brightness(0.6);
-    z-index: -2;
-  }
-
-  body::after {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: hsla(var(--background), 0.2);
-    z-index: -1;
-  }
-}
-
-@layer components {
-    .card, 
-    .popover, 
-    [role="dialog"], 
-    .sheet-content,
-    [role="alert"],
-    .recharts-tooltip-wrapper {
-        background-color: hsla(var(--muted), 0.5) !important;
-        backdrop-filter: blur(12px) saturate(120%);
-        -webkit-backdrop-filter: blur(12px) saturate(120%);
-        border: 1px solid hsla(var(--border), 0.3) !important;
-    }
-
-    .recharts-tooltip-cursor {
-        stroke: hsla(var(--primary), 0.5) !important;
-    }
 }

@@ -24,14 +24,14 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Link from 'next/link';
-import { HeartPulse, Loader2 } from 'lucide-react';
+import { HeartPulse, Loader2, AlertTriangle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address.'),
-  password: z.string().min(6, 'Password must be at least 6 characters.'),
+  password: z.string().min(1, 'Password is required.'),
 });
 
 type FormData = z.infer<typeof loginSchema>;
@@ -64,65 +64,70 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-            <div className="flex justify-center items-center gap-2 mb-4">
-                <HeartPulse className="h-8 w-8 text-primary" />
-                <CardTitle className="text-3xl">GlucoTrack</CardTitle>
-            </div>
-          <CardDescription>Enter your credentials to access your dashboard.</CardDescription>
-        </CardHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            <CardContent className="space-y-4">
-              {error && (
-                <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="john.doe@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <div className="w-full max-w-md">
+        <div className="flex justify-center items-center gap-2 mb-6">
+            <HeartPulse className="h-8 w-8 text-primary" />
+            <h1 className="text-3xl font-bold text-primary">GlucoTrack</h1>
+        </div>
+        <Card>
+            <CardHeader className="text-center">
+                <CardTitle className="text-2xl">Welcome Back</CardTitle>
+                <CardDescription>Enter your credentials to access your dashboard.</CardDescription>
+            </CardHeader>
+            <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+                <CardContent className="space-y-4">
+                {error && (
+                    <Alert variant="destructive">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertTitle>Login Failed</AlertTitle>
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
                 )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </CardContent>
-            <CardFooter className="flex flex-col gap-4">
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Login
-              </Button>
-               <p className="text-sm text-center text-muted-foreground">
-                Don't have an account?{' '}
-                <Link href="/signup" className="font-medium text-primary hover:underline">
-                  Sign up
-                </Link>
-              </p>
-            </CardFooter>
-          </form>
-        </Form>
-      </Card>
+                <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                        <Input type="email" placeholder="john.doe@example.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                        <Input type="password" placeholder="••••••••" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+                </CardContent>
+                <CardFooter className="flex flex-col gap-4">
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Login
+                </Button>
+                <p className="text-sm text-center text-muted-foreground">
+                    Don't have an account?{' '}
+                    <Link href="/signup" className="font-medium text-primary hover:underline">
+                    Sign up
+                    </Link>
+                </p>
+                </CardFooter>
+            </form>
+            </Form>
+        </Card>
+      </div>
     </div>
   );
 }

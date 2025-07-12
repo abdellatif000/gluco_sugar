@@ -1,12 +1,12 @@
 
 "use client";
 
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
-
+import { useRouter } from 'next/navigation';
 import { AppLayout } from '@/components/AppLayout';
 import { useApp } from '@/context/app-context';
 import { Button } from '@/components/ui/button';
@@ -37,7 +37,8 @@ import {
 import { calculateBMI } from '@/lib/utils';
 import type { MealType } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
-import { TrendingDown, TrendingUp, ArrowRight, Scale, Droplet } from 'lucide-react';
+import { TrendingDown, TrendingUp, ArrowRight, Scale, Droplet, PlusCircle, Activity, BarChart, User } from 'lucide-react';
+import Link from 'next/link';
 
 const glucoseLogSchema = z.object({
   glycemia: z.coerce.number().min(0.1, 'Glycemia is required.'),
@@ -46,8 +47,9 @@ const glucoseLogSchema = z.object({
 });
 
 export default function DashboardPage() {
-  const { profile, weightHistory, glucoseLogs, addGlucoseLog } = useApp();
+  const { profile, weightHistory, glucoseLogs, addGlucoseLog, user } = useApp();
   const { toast } = useToast();
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof glucoseLogSchema>>({
     resolver: zodResolver(glucoseLogSchema),
@@ -57,22 +59,33 @@ export default function DashboardPage() {
       mealType: 'Fasting',
     },
   });
+  
+  // Redirect if profile is incomplete
+  useEffect(() => {
+    if (profile && (!profile.height || !profile.birthdate)) {
+      toast({
+        title: 'Complete Your Profile',
+        description: "Please provide your height and birthdate to use all features.",
+      });
+      router.push('/profile');
+    }
+  }, [profile, router, toast]);
 
   const latestLog = glucoseLogs[0];
   const previousLog = glucoseLogs[1];
 
   const trend = useMemo(() => {
-    if (!latestLog || !previousLog) return { icon: ArrowRight, color: '' };
-    if (latestLog.glycemia > previousLog.glycemia) return { icon: TrendingUp, color: 'text-destructive' };
-    if (latestLog.glycemia < previousLog.glycemia) return { icon: TrendingDown, color: 'text-green-500' };
-    return { icon: ArrowRight, color: '' };
+    if (!latestLog || !previousLog) return { icon: Activity, color: 'text-muted-foreground', text: 'Stable' };
+    if (latestLog.glycemia > previousLog.glycemia) return { icon: TrendingUp, color: 'text-red-500', text: 'Trending Up' };
+    if (latestLog.glycemia < previousLog.glycemia) return { icon: TrendingDown, color: 'text-green-500', text: 'Trending Down' };
+    return { icon: ArrowRight, color: 'text-muted-foreground', text: 'Stable' };
   }, [latestLog, previousLog]);
   
   const TrendIcon = trend.icon;
 
   const latestWeight = weightHistory[0]?.weight;
   const bmi = useMemo(() => {
-    if (!profile) return null;
+    if (!profile || !latestWeight || !profile.height) return null;
     return calculateBMI(profile.height, latestWeight)
   }, [profile, latestWeight]);
 
@@ -85,63 +98,90 @@ export default function DashboardPage() {
       title: 'Success!',
       description: 'New glucose log has been added.',
     });
-    form.reset();
+    form.reset({
+      glycemia: 1.0,
+      dosage: 0,
+      mealType: 'Fasting',
+    });
   }
+  
+  if (!profile) return null; // Or a loading skeleton
 
   return (
     <AppLayout>
-      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Latest Glucose
-            </CardTitle>
-            <Droplet className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {latestLog ? (
-              <>
-                <div className="text-2xl font-bold flex items-center">
-                  {latestLog.glycemia} g/L
-                  <TrendIcon className={`ml-2 h-5 w-5 ${trend.color}`} />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {format(new Date(latestLog.timestamp), 'PPP p')}
-                </p>
-              </>
-            ) : (
-              <p className="text-sm text-muted-foreground">No logs yet.</p>
-            )}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">BMI</CardTitle>
-            <Scale className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {bmi ? (
+      <div className="flex flex-col gap-6">
+        <div>
+          <h1 className="text-3xl font-bold">Welcome back, {user?.displayName?.split(' ')[0]}!</h1>
+          <p className="text-muted-foreground">Here's a summary of your health today.</p>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Latest Glucose</CardTitle>
+              <Droplet className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              {latestLog ? (
                 <>
-                    <div className="text-2xl font-bold">{bmi}</div>
-                    <p className="text-xs text-muted-foreground">Based on weight of {latestWeight}kg</p>
+                  <div className="text-2xl font-bold">{latestLog.glycemia.toFixed(2)} <span className="text-sm font-normal text-muted-foreground">g/L</span></div>
+                  <div className="flex items-center text-xs text-muted-foreground">
+                     <TrendIcon className={`mr-1 h-4 w-4 ${trend.color}`} />
+                     {trend.text}
+                  </div>
                 </>
-            ) : (
-              <p className="text-sm text-muted-foreground">Enter weight and height in profile.</p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-      <div className="grid gap-4 md:gap-8">
+              ) : (
+                <p className="text-sm text-muted-foreground">No logs yet.</p>
+              )}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">BMI</CardTitle>
+              <Scale className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              {bmi ? (
+                  <>
+                      <div className="text-2xl font-bold">{bmi}</div>
+                      <p className="text-xs text-muted-foreground">From {latestWeight}kg and {profile.height}cm</p>
+                  </>
+              ) : (
+                <p className="text-sm text-muted-foreground">Enter weight & height in profile.</p>
+              )}
+            </CardContent>
+          </Card>
+           <Card className="lg:col-span-1">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Quick Navigation</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-2">
+               <Button asChild variant="ghost" className="justify-start">
+                <Link href="/logs"><BookText className="mr-2 h-4 w-4"/> View All Logs</Link>
+               </Button>
+               <Button asChild variant="ghost" className="justify-start">
+                 <Link href="/reports"><BarChart className="mr-2 h-4 w-4"/> See Reports</Link>
+               </Button>
+                <Button asChild variant="ghost" className="justify-start">
+                 <Link href="/profile"><User className="mr-2 h-4 w-4"/> Update Profile</Link>
+               </Button>
+            </CardContent>
+          </Card>
+        </div>
+
         <Card>
           <CardHeader>
-            <CardTitle>Quick Add Glucose Log</CardTitle>
+            <div className="flex items-center gap-2">
+                <PlusCircle className="h-6 w-6 text-primary"/>
+                <CardTitle>Add Glucose Log</CardTitle>
+            </div>
             <CardDescription>
-              Quickly add a new blood glucose reading.
+              Quickly add a new blood glucose reading for today.
             </CardDescription>
           </CardHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
-              <CardContent className="space-y-4">
+              <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <FormField
                     control={form.control}
@@ -175,10 +215,7 @@ export default function DashboardPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Meal Type</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a meal type" />
