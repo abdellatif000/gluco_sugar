@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --background: 180 100% 94%;
+    --background: 180 100% 98%;
     --foreground: 224 71% 4%;
     --card: 180 100% 94%;
     --card-foreground: 224 71% 4%;
@@ -12,11 +12,11 @@
     --popover-foreground: 224 71% 4%;
     --primary: 197 90% 48%;
     --primary-foreground: 224 71% 4%;
-    --secondary: 276 30% 92%;
+    --secondary: 276 30% 96%;
     --secondary-foreground: 224 71% 4%;
-    --muted: 180 20% 92%;
+    --muted: 180 20% 94%;
     --muted-foreground: 224 71% 35%;
-    --accent: 276 27% 85%;
+    --accent: 276 27% 90%;
     --accent-foreground: 224 71% 4%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
@@ -26,19 +26,19 @@
   }
  
   .dark {
-    --background: 220 15% 10%;
+    --background: 220 15% 5%;
     --foreground: 180 100% 94%;
     --card: 220 15% 10%;
     --card-foreground: 180 100% 94%;
-    --popover: 220 15% 12%;
+    --popover: 220 15% 7%;
     --popover-foreground: 180 100% 94%;
     --primary: 197 71% 73%;
     --primary-foreground: 224 71% 4%;
-    --secondary: 276 27% 20%;
+    --secondary: 276 27% 15%;
     --secondary-foreground: 180 100% 94%;
-    --muted: 220 15% 20%;
+    --muted: 220 15% 15%;
     --muted-foreground: 180 100% 80%;
-    --accent: 276 27% 30%;
+    --accent: 276 27% 25%;
     --accent-foreground: 180 100% 94%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
@@ -53,7 +53,7 @@
     @apply border-border;
   }
   body {
-    @apply text-foreground;
+    @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
     min-height: 100vh;
   }
@@ -86,9 +86,19 @@
 }
 
 @layer components {
-    .card, .popover, [role="dialog"], .sheet-content, .bg-muted\/50, [role="alert"] {
+    .card, 
+    .popover, 
+    [role="dialog"], 
+    .sheet-content,
+    [role="alert"],
+    .recharts-tooltip-wrapper {
         background-color: hsla(var(--muted), 0.5) !important;
         backdrop-filter: blur(12px) saturate(120%);
+        -webkit-backdrop-filter: blur(12px) saturate(120%);
         border: 1px solid hsla(var(--border), 0.3) !important;
+    }
+
+    .recharts-tooltip-cursor {
+        stroke: hsla(var(--primary), 0.5) !important;
     }
 }
