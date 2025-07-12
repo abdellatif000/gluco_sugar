@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -41,14 +42,14 @@ export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   
   const latestWeight = weightHistory[0]?.weight;
-  const bmi = calculateBMI(profile.height, latestWeight);
-  const age = calculateAge(profile.birthdate);
+  const bmi = profile ? calculateBMI(profile.height, latestWeight) : null;
+  const age = profile ? calculateAge(profile.birthdate) : null;
 
   const profileForm = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: profile.name,
-      height: profile.height,
+      name: '',
+      height: 0,
     },
   });
 
@@ -60,10 +61,12 @@ export default function ProfilePage() {
   });
   
   useEffect(() => {
-    profileForm.reset({
-        name: profile.name,
-        height: profile.height,
-    });
+    if (profile) {
+      profileForm.reset({
+          name: profile.name,
+          height: profile.height,
+      });
+    }
   }, [profile, profileForm]);
 
   const onProfileSubmit = async (data: z.infer<typeof profileSchema>) => {
@@ -85,6 +88,8 @@ export default function ProfilePage() {
     weightForm.reset({ weight: data.weight });
   };
   
+  if (!profile) return null;
+
   return (
     <AppLayout>
       <div className="grid gap-6 md:grid-cols-2">

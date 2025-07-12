@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo } from 'react';
@@ -70,7 +71,10 @@ export default function DashboardPage() {
   const TrendIcon = trend.icon;
 
   const latestWeight = weightHistory[0]?.weight;
-  const bmi = useMemo(() => calculateBMI(profile.height, latestWeight), [profile.height, latestWeight]);
+  const bmi = useMemo(() => {
+    if (!profile) return null;
+    return calculateBMI(profile.height, latestWeight)
+  }, [profile, latestWeight]);
 
   function onSubmit(values: z.infer<typeof glucoseLogSchema>) {
     addGlucoseLog({
