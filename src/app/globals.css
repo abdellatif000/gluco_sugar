@@ -87,8 +87,8 @@
 
 @layer components {
     .card, .popover, [role="dialog"], .sheet-content {
-        background-color: hsla(var(--card), 0.65);
+        background-color: hsla(var(--muted), 0.5);
         backdrop-filter: blur(12px) saturate(120%);
-        border: 1px solid hsla(var(--border), 0.5);
+        border: 1px solid hsla(var(--border), 0.3);
     }
 }
