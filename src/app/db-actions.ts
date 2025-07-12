@@ -1,13 +1,29 @@
+
 'use server';
 
 import { db } from '@/lib/db';
 import * as schema from '@/lib/schema';
-import type { UserProfile, WeightEntry, GlucoseLog, MealType, AppUser } from '@/lib/types';
+import type { UserProfile, WeightEntry, GlucoseLog, AppUser } from '@/lib/types';
 import { eq, inArray } from 'drizzle-orm';
 import { cookies } from 'next/headers';
 import bcrypt from 'bcryptjs';
 
 const SESSION_COOKIE_NAME = 'glucotrack_session';
+
+// Check for database connection string
+if (!process.env.POSTGRES_URL) {
+  const errorMessage = "Database connection string is not configured. Please set POSTGRES_URL.";
+  const handler = {
+    get(target: any, prop: any) {
+      if (typeof target[prop] === 'function') {
+        return () => { throw new Error(errorMessage) };
+      }
+      return target[prop];
+    },
+  };
+  module.exports = new Proxy({}, handler);
+}
+
 
 async function hashPassword(password: string): Promise<string> {
   const salt = await bcrypt.genSalt(10);
@@ -56,9 +72,8 @@ export async function signup(email: string, password: string, name: string): Pro
   }
   
   const passwordHash = await hashPassword(password);
-  const userId = `user_${Date.now()}`;
   
-  const newUser = await db.insert(schema.users).values({ id: userId, name, email, passwordHash }).returning().then(res => res[0]);
+  const newUser = await db.insert(schema.users).values({ id: `user_${Date.now()}`, name, email, passwordHash }).returning().then(res => res[0]);
 
   await createSession(newUser.id);
   
@@ -126,13 +141,12 @@ export async function getWeightHistory(userId: string): Promise<WeightEntry[]> {
     orderBy: (entry, { desc }) => [desc(entry.date)],
   });
 
-  return entries.map(e => ({ ...e, date: e.date.toISOString() }));
+  return entries.map(e => ({ ...e, date: e.date.toISOString(), id: e.id as string }));
 }
 
 export async function addWeightEntry(userId: string, data: Omit<WeightEntry, 'id'>): Promise<WeightEntry> {
-    const id = `weight_${Date.now()}`;
-    const newEntry = await db.insert(schema.weightHistory).values({ id, userId, ...data, date: new Date(data.date) }).returning().then(res => res[0]);
-    return { ...newEntry, date: newEntry.date.toISOString() };
+    const newEntry = await db.insert(schema.weightHistory).values({ id: `weight_${Date.now()}`, userId, ...data, date: new Date(data.date) }).returning().then(res => res[0]);
+    return { ...newEntry, date: newEntry.date.toISOString(), id: newEntry.id as string };
 }
 
 export async function updateWeightEntry(entry: WeightEntry): Promise<WeightEntry> {
@@ -140,7 +154,7 @@ export async function updateWeightEntry(entry: WeightEntry): Promise<WeightEntry
         .set({ weight: entry.weight, date: new Date(entry.date) })
         .where(eq(schema.weightHistory.id, entry.id))
         .returning().then(res => res[0]);
-    return { ...updatedEntry, date: updatedEntry.date.toISOString() };
+    return { ...updatedEntry, date: updatedEntry.date.toISOString(), id: updatedEntry.id as string };
 }
 
 export async function deleteWeightEntry(id: string): Promise<void> {
@@ -162,12 +176,12 @@ export async function getGlucoseLogs(userId: string): Promise<GlucoseLog[]> {
     return logs.map(l => ({
         ...l,
         timestamp: l.timestamp.toISOString(),
+        id: l.id,
     }));
 }
 
 export async function addGlucoseLog(userId: string, data: Omit<GlucoseLog, 'id'>): Promise<GlucoseLog> {
-    const id = `gl_${Date.now()}`;
-    const newLog = await db.insert(schema.glucoseLogs).values({ id, userId, ...data, timestamp: new Date(data.timestamp) }).returning().then(res => res[0]);
+    const newLog = await db.insert(schema.glucoseLogs).values({ id: `gl_${Date.now()}`, userId, ...data, timestamp: new Date(data.timestamp) }).returning().then(res => res[0]);
     return { ...newLog, timestamp: newLog.timestamp.toISOString() };
 }
 
