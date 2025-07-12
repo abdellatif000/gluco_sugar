@@ -28,6 +28,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import type { WeightEntry } from '@/lib/types';
 import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from '@/components/ui/separator';
 
 
 const profileSchema = z.object({
@@ -47,6 +48,16 @@ const editWeightSchema = z.object({
   date: z.string(),
   weight: z.coerce.number().min(1, "Weight must be positive."),
 });
+
+const DetailRow = ({ label, value, isEditing, children }: { label: string, value: React.ReactNode, isEditing: boolean, children: React.ReactNode }) => (
+    <div className="grid grid-cols-3 items-center gap-4">
+        <FormLabel className="text-muted-foreground col-span-1">{label}</FormLabel>
+        <div className="col-span-2">
+            {isEditing ? children : <div className="text-sm py-2">{value}</div>}
+        </div>
+    </div>
+);
+
 
 export default function ProfilePage() {
   const { profile, weightHistory, updateProfile, addWeightEntry, updateWeightEntry, deleteWeightEntry, deleteMultipleWeightEntries } = useApp();
@@ -181,52 +192,45 @@ export default function ProfilePage() {
                 <CardTitle>User Details</CardTitle>
                 <CardDescription>Your personal information.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent>
                     <Form {...profileForm}>
                         <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-4">
-                            <FormField
+                           <FormField
                                 control={profileForm.control}
                                 name="name"
                                 render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Name</FormLabel>
-                                    <FormControl>
-                                    <Input {...field} readOnly={!isEditingProfile} className={!isEditingProfile ? 'border-none bg-transparent p-0 shadow-none h-auto' : 'bg-transparent'}/>
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
+                                    <DetailRow label="Name" isEditing={isEditingProfile} value={profile.name}>
+                                        <FormControl>
+                                            <Input {...field} className="bg-background/50" />
+                                        </FormControl>
+                                    </DetailRow>
                                 )}
                             />
                             <FormField
                                 control={profileForm.control}
                                 name="birthdate"
                                 render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Birthdate</FormLabel>
-                                    <FormControl>
-                                      {isEditingProfile ? (
-                                        <Input type="date" {...field} className="bg-transparent" />
-                                      ) : (
-                                        <p className="text-sm pt-2">{profile.birthdate ? `${format(new Date(profile.birthdate), 'PPP')} (${age} years old)` : 'Not set'}</p>
-                                      )}
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
+                                    <DetailRow label="Birthdate" isEditing={isEditingProfile} value={profile.birthdate ? `${format(new Date(profile.birthdate), 'PPP')} (${age} years old)` : 'Not set'}>
+                                         <FormControl>
+                                            <Input type="date" {...field} className="bg-background/50" />
+                                         </FormControl>
+                                    </DetailRow>
                                 )}
                             />
                             <FormField
                                 control={profileForm.control}
                                 name="height"
                                 render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Height (cm)</FormLabel>
-                                    <FormControl>
-                                    <Input type="number" {...field} readOnly={!isEditingProfile} className={!isEditingProfile ? 'border-none bg-transparent p-0 shadow-none h-auto' : 'bg-transparent'}/>
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
+                                    <DetailRow label="Height (cm)" isEditing={isEditingProfile} value={profile.height > 0 ? profile.height : 'Not set'}>
+                                        <FormControl>
+                                            <Input type="number" {...field} className="bg-background/50" />
+                                        </FormControl>
+                                    </DetailRow>
                                 )}
                             />
+                            
+                            <FormMessage>{profileForm.formState.errors.name?.message || profileForm.formState.errors.birthdate?.message || profileForm.formState.errors.height?.message}</FormMessage>
+
                             <div className="flex justify-end gap-2 pt-2">
                                 {isEditingProfile ? (
                                     <>
@@ -277,12 +281,13 @@ export default function ProfilePage() {
                         <FormItem>
                             <FormLabel>New Weight Entry (kg)</FormLabel>
                             <FormControl>
-                                <Input type="number" step="0.1" {...field} className="bg-transparent" />
+                                <Input type="number" step="0.1" {...field} className="bg-background/50" />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
                         )}
                     />
+                    <Separator />
                     <div className="max-h-60 overflow-y-auto">
                         <Table>
                             <TableHeader>
@@ -301,7 +306,7 @@ export default function ProfilePage() {
                             </TableHeader>
                             <TableBody>
                             {weightHistory.map((entry) => (
-                                <TableRow key={entry.id} data-state={selectedWeightIds.includes(entry.id) && "selected"} className="data-[state=selected]:bg-primary/20">
+                                <TableRow key={entry.id} data-state={selectedWeightIds.includes(entry.id) && "selected"} className="data-[state=selected]:bg-primary/20 border-b border-white/5">
                                 <TableCell>
                                     <Checkbox
                                         checked={selectedWeightIds.includes(entry.id)}
@@ -364,7 +369,7 @@ export default function ProfilePage() {
                             <FormItem>
                                 <FormLabel>Weight (kg)</FormLabel>
                                 <FormControl>
-                                    <Input type="number" step="0.1" {...field} className="bg-transparent" />
+                                    <Input type="number" step="0.1" {...field} className="bg-background/50" />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>

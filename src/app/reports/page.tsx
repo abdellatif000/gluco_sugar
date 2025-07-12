@@ -44,7 +44,7 @@ export default function ReportsPage() {
           </div>
           <div className="mt-4 md:mt-0">
             <Select value={timeRange} onValueChange={setTimeRange}>
-              <SelectTrigger className="w-[180px] bg-transparent">
+              <SelectTrigger className="w-[180px] bg-background/50">
                 <SelectValue placeholder="Select time range" />
               </SelectTrigger>
               <SelectContent className="bg-glass-popover">

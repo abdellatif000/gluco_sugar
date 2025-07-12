@@ -190,7 +190,7 @@ export default function DashboardPage() {
                       <FormItem>
                         <FormLabel>Glycemia (g/L)</FormLabel>
                         <FormControl>
-                          <Input type="number" step="0.01" {...field} className="bg-transparent" />
+                          <Input type="number" step="0.01" {...field} className="bg-background/50" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -203,7 +203,7 @@ export default function DashboardPage() {
                       <FormItem>
                         <FormLabel>Novorapide Dosage</FormLabel>
                         <FormControl>
-                          <Input type="number" step="1" {...field} className="bg-transparent" />
+                          <Input type="number" step="1" {...field} className="bg-background/50" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -217,7 +217,7 @@ export default function DashboardPage() {
                         <FormLabel>Meal Type</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
-                            <SelectTrigger className="bg-transparent">
+                            <SelectTrigger className="bg-background/50">
                               <SelectValue placeholder="Select a meal type" />
                             </SelectTrigger>
                           </FormControl>

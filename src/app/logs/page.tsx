@@ -223,7 +223,7 @@ export default function LogsPage() {
                         type="datetime-local"
                         defaultValue={field.value ? format(new Date(field.value), "yyyy-MM-dd'T'HH:mm") : ''}
                         onChange={(e) => field.onChange(e.target.value)}
-                         className="bg-transparent"
+                         className="bg-background/50"
                       />
                     </FormControl>
                     <FormMessage />
@@ -236,7 +236,7 @@ export default function LogsPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Glycemia (g/L)</FormLabel>
-                    <FormControl><Input type="number" step="0.01" {...field} className="bg-transparent"/></FormControl>
+                    <FormControl><Input type="number" step="0.01" {...field} className="bg-background/50"/></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -247,7 +247,7 @@ export default function LogsPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Novorapide Dosage</FormLabel>
-                    <FormControl><Input type="number" step="1" {...field} className="bg-transparent"/></FormControl>
+                    <FormControl><Input type="number" step="1" {...field} className="bg-background/50"/></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -260,7 +260,7 @@ export default function LogsPage() {
                     <FormLabel>Meal Type</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger className="bg-transparent">
+                        <SelectTrigger className="bg-background/50">
                           <SelectValue placeholder="Select a meal type" />
                         </SelectTrigger>
                       </FormControl>
