@@ -56,7 +56,7 @@ export default function ProfilePage() {
   const weightForm = useForm<z.infer<typeof weightSchema>>({
     resolver: zodResolver(weightSchema),
     defaultValues: {
-      weight: latestWeight || 0,
+      weight: 0,
     },
   });
   
@@ -67,7 +67,10 @@ export default function ProfilePage() {
           height: profile.height,
       });
     }
-  }, [profile, profileForm]);
+    if(latestWeight) {
+        weightForm.reset({ weight: latestWeight });
+    }
+  }, [profile, latestWeight, profileForm, weightForm]);
 
   const onProfileSubmit = async (data: z.infer<typeof profileSchema>) => {
     setIsSaving(true);
@@ -88,7 +91,14 @@ export default function ProfilePage() {
     weightForm.reset({ weight: data.weight });
   };
   
-  if (!profile) return null;
+  if (!profile) return (
+    <AppLayout>
+        <div className="flex items-center justify-center h-full">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+    </AppLayout>
+  );
+
 
   return (
     <AppLayout>
