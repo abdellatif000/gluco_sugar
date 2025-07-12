@@ -105,21 +105,21 @@
   }
 
   .bg-glass {
-      @apply bg-card/60 border border-white/10;
+      @apply bg-card/75 border border-white/10;
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
   }
 
   .dark .bg-glass {
-      @apply bg-card/50 border border-white/10;
+      @apply bg-card/60 border border-white/10;
   }
 
   .bg-glass-popover {
-      @apply bg-popover/80 border border-white/10;
+      @apply bg-popover/85 border border-white/10;
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
   }
   .dark .bg-glass-popover {
-      @apply bg-popover/70 border border-white/10;
+      @apply bg-popover/80 border border-white/10;
   }
 }
