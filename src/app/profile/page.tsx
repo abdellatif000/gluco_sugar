@@ -29,6 +29,9 @@ import { Calendar, User, Scale, Loader2 } from 'lucide-react';
 const profileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   height: z.coerce.number().min(1, "Height must be positive."),
+  birthdate: z.string().refine((val) => !isNaN(Date.parse(val)), {
+    message: "Invalid date format.",
+  }),
 });
 
 const weightSchema = z.object({
@@ -50,6 +53,7 @@ export default function ProfilePage() {
     defaultValues: {
       name: '',
       height: 0,
+      birthdate: '',
     },
   });
 
@@ -60,17 +64,25 @@ export default function ProfilePage() {
     },
   });
   
-  useEffect(() => {
+  const resetProfileForm = () => {
     if (profile) {
       profileForm.reset({
-          name: profile.name,
-          height: profile.height,
+        name: profile.name,
+        height: profile.height,
+        birthdate: profile.birthdate ? format(new Date(profile.birthdate), 'yyyy-MM-dd') : '',
       });
+    }
+  };
+
+  useEffect(() => {
+    if (profile) {
+      resetProfileForm();
     }
     if(latestWeight) {
         weightForm.reset({ weight: latestWeight });
     }
-  }, [profile, latestWeight, profileForm, weightForm]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile, latestWeight]);
 
   const onProfileSubmit = async (data: z.infer<typeof profileSchema>) => {
     setIsSaving(true);
@@ -125,11 +137,23 @@ export default function ProfilePage() {
                                 </FormItem>
                                 )}
                             />
-                             <div className="flex items-center gap-4">
-                                <Calendar className="h-5 w-5 text-muted-foreground" />
-                                <span className="font-medium text-sm">Birthdate:</span>
-                                <span className="text-sm">{profile.birthdate ? `${format(new Date(profile.birthdate), 'PPP')} (${age} years old)` : 'Not set'}</span>
-                            </div>
+                            <FormField
+                                control={profileForm.control}
+                                name="birthdate"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Birthdate</FormLabel>
+                                    <FormControl>
+                                      {isEditing ? (
+                                        <Input type="date" {...field} />
+                                      ) : (
+                                        <p className="text-sm pt-2">{profile.birthdate ? `${format(new Date(profile.birthdate), 'PPP')} (${age} years old)` : 'Not set'}</p>
+                                      )}
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
                             <FormField
                                 control={profileForm.control}
                                 name="height"
@@ -146,7 +170,7 @@ export default function ProfilePage() {
                             <div className="flex justify-end gap-2 pt-2">
                                 {isEditing ? (
                                     <>
-                                        <Button variant="outline" onClick={() => { setIsEditing(false); profileForm.reset({ name: profile.name, height: profile.height }); }}>Cancel</Button>
+                                        <Button variant="outline" onClick={() => { setIsEditing(false); resetProfileForm(); }}>Cancel</Button>
                                         <Button type="submit" disabled={isSaving}>
                                             {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                                             Save
