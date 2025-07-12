@@ -5,7 +5,6 @@ import { useMemo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { AppLayout } from '@/components/AppLayout';
 import { useApp } from '@/context/app-context';
@@ -116,7 +115,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <Card className="bg-glass">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Latest Glucose</CardTitle>
               <Droplet className="h-4 w-4 text-muted-foreground" />
@@ -135,7 +134,7 @@ export default function DashboardPage() {
               )}
             </CardContent>
           </Card>
-          <Card className="bg-glass">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">BMI</CardTitle>
               <Scale className="h-4 w-4 text-muted-foreground" />
@@ -151,7 +150,7 @@ export default function DashboardPage() {
               )}
             </CardContent>
           </Card>
-           <Card className="lg:col-span-1 bg-glass">
+           <Card className="lg:col-span-1">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Quick Navigation</CardTitle>
             </CardHeader>
@@ -169,7 +168,7 @@ export default function DashboardPage() {
           </Card>
         </div>
 
-        <Card className="bg-glass">
+        <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
                 <PlusCircle className="h-6 w-6 text-primary"/>
@@ -190,7 +189,7 @@ export default function DashboardPage() {
                       <FormItem>
                         <FormLabel>Glycemia (g/L)</FormLabel>
                         <FormControl>
-                          <Input type="number" step="0.01" {...field} className="bg-background/50" />
+                          <Input type="number" step="0.01" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -203,7 +202,7 @@ export default function DashboardPage() {
                       <FormItem>
                         <FormLabel>Novorapide Dosage</FormLabel>
                         <FormControl>
-                          <Input type="number" step="1" {...field} className="bg-background/50" />
+                          <Input type="number" step="1" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -217,11 +216,11 @@ export default function DashboardPage() {
                         <FormLabel>Meal Type</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
-                            <SelectTrigger className="bg-background/50">
+                            <SelectTrigger>
                               <SelectValue placeholder="Select a meal type" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent className="bg-glass-popover">
+                          <SelectContent>
                             <SelectItem value="Breakfast">Breakfast</SelectItem>
                             <SelectItem value="Lunch">Lunch</SelectItem>
                             <SelectItem value="Dinner">Dinner</SelectItem>

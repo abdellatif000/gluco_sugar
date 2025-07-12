@@ -34,7 +34,7 @@ export default function ReportsPage() {
 
   return (
     <AppLayout>
-      <Card className="bg-glass">
+      <Card>
         <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
             <CardTitle>Glucose Trends</CardTitle>
@@ -44,10 +44,10 @@ export default function ReportsPage() {
           </div>
           <div className="mt-4 md:mt-0">
             <Select value={timeRange} onValueChange={setTimeRange}>
-              <SelectTrigger className="w-[180px] bg-background/50">
+              <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Select time range" />
               </SelectTrigger>
-              <SelectContent className="bg-glass-popover">
+              <SelectContent>
                 <SelectItem value="7">Last 7 Days</SelectItem>
                 <SelectItem value="14">Last 14 Days</SelectItem>
                 <SelectItem value="30">Last 30 Days</SelectItem>
@@ -78,9 +78,8 @@ export default function ReportsPage() {
                         labelFormatter={(label) => format(new Date(label), 'PPP p')}
                         formatter={(value) => [`${value} g/L`, 'Glycemia']}
                         contentStyle={{
-                            backgroundColor: 'hsl(var(--background) / 0.8)',
+                            backgroundColor: 'hsl(var(--card))',
                             borderColor: 'hsl(var(--border))',
-                            backdropFilter: 'blur(4px)',
                         }}
                     />
                     <Line 

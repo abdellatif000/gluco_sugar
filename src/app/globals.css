@@ -4,83 +4,67 @@
 
 @layer base {
   :root {
-    --background-hsl: 180 100% 97%;
-    --background: hsl(var(--background-hsl));
+    --background: 240 10% 98%;
     --foreground: 224 71% 4%;
 
-    --card-hsl: 210 20% 98%;
-    --card: hsl(var(--card-hsl));
+    --card: 0 0% 100%;
     --card-foreground: 224 71% 4%;
 
-    --popover-hsl: 210 20% 98%;
-    --popover: hsl(var(--popover-hsl));
+    --popover: 0 0% 100%;
     --popover-foreground: 224 71% 4%;
 
-    --primary-hsl: 197 80% 50%;
-    --primary: hsl(var(--primary-hsl));
+    --primary: 197 80% 50%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
 
-    --muted-hsl: 210 40% 96.1%;
-    --muted: hsl(var(--muted-hsl));
+    --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
     
-    --accent-hsl: 300 45% 85%;
-    --accent: hsl(var(--accent-hsl));
+    --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border-hsl: 214.3 31.8% 91.4%;
-    --border: hsl(var(--border-hsl));
+    --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     
-    --ring-hsl: 197 80% 50%;
-    --ring: hsl(var(--ring-hsl));
+    --ring: 197 80% 50%;
     
     --radius: 0.5rem;
   }
  
   .dark {
-    --background-hsl: 220 15% 5%;
-    --background: hsl(var(--background-hsl));
+    --background: 220 20% 7%;
     --foreground: 180 20% 98%;
 
-    --card-hsl: 220 15% 10%;
-    --card: hsl(var(--card-hsl));
+    --card: 220 20% 12%;
     --card-foreground: 180 20% 98%;
 
-    --popover-hsl: 220 15% 10%;
-    --popover: hsl(var(--popover-hsl));
+    --popover: 220 20% 12%;
     --popover-foreground: 180 20% 98%;
 
-    --primary-hsl: 197 71% 73%;
-    --primary: hsl(var(--primary-hsl));
+    --primary: 197 71% 73%;
     --primary-foreground: 197 90% 5%;
     
     --secondary: 220 15% 15%;
     --secondary-foreground: 180 20% 98%;
     
-    --muted-hsl: 220 15% 15%;
-    --muted: hsl(var(--muted-hsl));
+    --muted: 220 15% 15%;
     --muted-foreground: 180 20% 80%;
 
-    --accent-hsl: 300 20% 30%;
-    --accent: hsl(var(--accent-hsl));
+    --accent: 220 15% 15%;
     --accent-foreground: 180 20% 98%;
     
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 85.7% 97.3%;
     
-    --border-hsl: 220 15% 25%;
-    --border: hsl(var(--border-hsl));
+    --border: 220 15% 25%;
     --input: 220 15% 22%;
     
-    --ring-hsl: 197 71% 73%;
-    --ring: hsl(var(--ring-hsl));
+    --ring: 197 71% 73%;
   }
 }
 
@@ -89,43 +73,17 @@
     @apply border-border;
   }
   
-  body::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-image: url('https://plus.unsplash.com/premium_photo-1661578947517-e292bf6cea5e?q=80&w=3520&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    filter: blur(8px) brightness(0.6);
-    z-index: -1;
-  }
-  
   body {
-    @apply bg-transparent text-foreground;
+    @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
     min-height: 100vh;
   }
 
   .bg-glass {
-      @apply bg-white/10 border border-white/10;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-  }
-
-  .dark .bg-glass {
-      @apply bg-black/20 border-white/10;
+      @apply bg-card;
   }
 
   .bg-glass-popover {
-      @apply bg-popover/85 border border-white/10;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-  }
-  .dark .bg-glass-popover {
-      @apply bg-popover/85 border border-white/10;
+      @apply bg-popover;
   }
 }

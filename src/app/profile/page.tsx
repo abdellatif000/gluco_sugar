@@ -22,14 +22,13 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Calendar, User, Scale, Loader2, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { Loader2, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import type { WeightEntry } from '@/lib/types';
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from '@/components/ui/separator';
-
 
 const profileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -187,7 +186,7 @@ export default function ProfilePage() {
     <AppLayout>
       <div className="grid gap-6 md:grid-cols-2">
         <div className="flex flex-col gap-6">
-            <Card className="bg-glass">
+            <Card>
                 <CardHeader>
                 <CardTitle>User Details</CardTitle>
                 <CardDescription>Your personal information.</CardDescription>
@@ -201,7 +200,7 @@ export default function ProfilePage() {
                                 render={({ field }) => (
                                     <DetailRow label="Name" isEditing={isEditingProfile} value={profile.name}>
                                         <FormControl>
-                                            <Input {...field} className="bg-background/50" />
+                                            <Input {...field} />
                                         </FormControl>
                                     </DetailRow>
                                 )}
@@ -212,7 +211,7 @@ export default function ProfilePage() {
                                 render={({ field }) => (
                                     <DetailRow label="Birthdate" isEditing={isEditingProfile} value={profile.birthdate ? `${format(new Date(profile.birthdate), 'PPP')} (${age} years old)` : 'Not set'}>
                                          <FormControl>
-                                            <Input type="date" {...field} className="bg-background/50" />
+                                            <Input type="date" {...field} />
                                          </FormControl>
                                     </DetailRow>
                                 )}
@@ -223,7 +222,7 @@ export default function ProfilePage() {
                                 render={({ field }) => (
                                     <DetailRow label="Height (cm)" isEditing={isEditingProfile} value={profile.height > 0 ? profile.height : 'Not set'}>
                                         <FormControl>
-                                            <Input type="number" {...field} className="bg-background/50" />
+                                            <Input type="number" {...field} />
                                         </FormControl>
                                     </DetailRow>
                                 )}
@@ -249,24 +248,23 @@ export default function ProfilePage() {
                 </CardContent>
             </Card>
 
-            <Card className="bg-glass">
+            <Card>
                 <CardHeader>
                 <CardTitle>Health Metrics</CardTitle>
                 <CardDescription>Calculated based on your data.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                <div className="flex items-center gap-4">
-                  <Scale className="h-5 w-5 text-muted-foreground" />
-                  <span className="font-medium">BMI:</span>
-                  <span className="font-bold text-xl">{bmi || 'N/A'}</span>
-                  {bmi && <span className="text-muted-foreground text-sm">(Based on {latestWeight}kg & {profile.height}cm)</span>}
-                </div>
-                {!bmi && <p className="text-sm text-muted-foreground pt-2">Enter your weight to calculate BMI.</p>}
+                    <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">BMI:</span>
+                        <span className="font-bold text-xl">{bmi || 'N/A'}</span>
+                    </div>
+                    {bmi && <p className="text-xs text-muted-foreground">(Based on {latestWeight}kg & {profile.height}cm)</p>}
+                    {!bmi && <p className="text-sm text-muted-foreground pt-2">Enter your weight to calculate BMI.</p>}
                 </CardContent>
             </Card>
         </div>
 
-        <Card className="bg-glass">
+        <Card>
           <CardHeader>
             <CardTitle>Weight Management</CardTitle>
             <CardDescription>Track your weekly weight.</CardDescription>
@@ -281,7 +279,7 @@ export default function ProfilePage() {
                         <FormItem>
                             <FormLabel>New Weight Entry (kg)</FormLabel>
                             <FormControl>
-                                <Input type="number" step="0.1" {...field} className="bg-background/50" />
+                                <Input type="number" step="0.1" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -306,7 +304,7 @@ export default function ProfilePage() {
                             </TableHeader>
                             <TableBody>
                             {weightHistory.map((entry) => (
-                                <TableRow key={entry.id} data-state={selectedWeightIds.includes(entry.id) && "selected"} className="data-[state=selected]:bg-primary/20 border-b border-white/5">
+                                <TableRow key={entry.id} data-state={selectedWeightIds.includes(entry.id) && "selected"} className="data-[state=selected]:bg-muted">
                                 <TableCell>
                                     <Checkbox
                                         checked={selectedWeightIds.includes(entry.id)}
@@ -324,7 +322,7 @@ export default function ProfilePage() {
                                             <span className="sr-only">Toggle menu</span>
                                             </Button>
                                         </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end" className="bg-glass-popover">
+                                        <DropdownMenuContent align="end">
                                             <DropdownMenuItem onSelect={() => handleEditWeight(entry)} className="flex items-center gap-2">
                                                 <Pencil className="h-4 w-4" /> Edit
                                             </DropdownMenuItem>
@@ -355,7 +353,7 @@ export default function ProfilePage() {
       </div>
 
       <Dialog open={!!editingWeight} onOpenChange={(open) => !open && setEditingWeight(null)}>
-        <DialogContent className="bg-glass">
+        <DialogContent>
             <DialogHeader>
                 <DialogTitle>Edit Weight Entry</DialogTitle>
                 <DialogDescription>Update the weight for {editingWeight ? format(new Date(editingWeight.date), 'PPP') : ''}.</DialogDescription>
@@ -369,7 +367,7 @@ export default function ProfilePage() {
                             <FormItem>
                                 <FormLabel>Weight (kg)</FormLabel>
                                 <FormControl>
-                                    <Input type="number" step="0.1" {...field} className="bg-background/50" />
+                                    <Input type="number" step="0.1" {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -385,7 +383,7 @@ export default function ProfilePage() {
       </Dialog>
       
       <AlertDialog open={!!deletingWeightId} onOpenChange={(open) => !open && setDeletingWeightId(null)}>
-        <AlertDialogContent className="bg-glass">
+        <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>

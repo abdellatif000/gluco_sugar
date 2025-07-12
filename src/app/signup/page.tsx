@@ -66,13 +66,13 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-transparent p-4">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
          <div className="flex justify-center items-center gap-2 mb-6">
             <HeartPulse className="h-8 w-8 text-primary" />
             <h1 className="text-3xl font-bold text-primary">GlucoTrack</h1>
         </div>
-        <Card className="bg-glass">
+        <Card>
             <CardHeader className="text-center">
                 <CardTitle className="text-2xl">Create an Account</CardTitle>
                 <CardDescription>Join us to start tracking your health.</CardDescription>
@@ -81,7 +81,7 @@ export default function SignupPage() {
             <form onSubmit={form.handleSubmit(onSubmit)}>
                 <CardContent className="space-y-4">
                 {error && (
-                    <Alert variant="destructive" className="bg-destructive/20 border-destructive">
+                    <Alert variant="destructive">
                         <AlertTriangle className="h-4 w-4" />
                         <AlertTitle>Signup Failed</AlertTitle>
                         <AlertDescription>{error}</AlertDescription>
@@ -94,7 +94,7 @@ export default function SignupPage() {
                     <FormItem>
                         <FormLabel>Full Name</FormLabel>
                         <FormControl>
-                        <Input placeholder="John Doe" {...field} className="bg-background/50"/>
+                        <Input placeholder="John Doe" {...field} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -107,7 +107,7 @@ export default function SignupPage() {
                     <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                        <Input type="email" placeholder="john.doe@example.com" {...field} className="bg-background/50"/>
+                        <Input type="email" placeholder="john.doe@example.com" {...field} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -120,7 +120,7 @@ export default function SignupPage() {
                     <FormItem>
                         <FormLabel>Password</FormLabel>
                         <FormControl>
-                        <Input type="password" placeholder="••••••••" {...field} className="bg-background/50"/>
+                        <Input type="password" placeholder="••••••••" {...field} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>

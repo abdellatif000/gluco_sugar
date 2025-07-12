@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useTransition } from 'react';
@@ -47,7 +48,7 @@ export default function RemindersPage() {
 
   return (
     <AppLayout>
-      <Card className="bg-glass">
+      <Card>
         <CardHeader>
           <CardTitle>Smart Reminders</CardTitle>
           <CardDescription>
@@ -73,20 +74,17 @@ export default function RemindersPage() {
               <h3 className="text-lg font-semibold">Suggested Reminders</h3>
               {reminders.map((reminder, index) => {
                 let Icon = Bell;
-                let variant: "default" | "destructive" | undefined = undefined;
-                let className = "bg-primary/20 border-primary/30";
+                let variant: "default" | "destructive" | undefined = "default";
                 
                 if(reminder.time === "Info") {
                     Icon = Lightbulb;
-                    className = "bg-accent/20 border-accent/30";
                 } else if (reminder.time === "Error") {
                     Icon = AlertTriangle;
                     variant = "destructive"
-                    className = "bg-destructive/20 border-destructive"
                 }
 
                 return (
-                    <Alert key={index} variant={variant} className={className}>
+                    <Alert key={index} variant={variant}>
                         <Icon className="h-4 w-4" />
                         <AlertTitle>{reminder.time}</AlertTitle>
                         <AlertDescription>{reminder.message}</AlertDescription>
@@ -97,7 +95,7 @@ export default function RemindersPage() {
           )}
 
           {!isPending && reminders.length === 0 && (
-            <Alert className="bg-accent/20 border-accent/30">
+            <Alert>
               <Lightbulb className="h-4 w-4" />
               <AlertTitle>Ready to get started?</AlertTitle>
               <AlertDescription>

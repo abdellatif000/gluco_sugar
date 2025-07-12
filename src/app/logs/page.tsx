@@ -122,7 +122,7 @@ export default function LogsPage() {
 
   return (
     <AppLayout>
-      <Card className="bg-glass">
+      <Card>
         <CardHeader className="flex flex-row items-center justify-between">
             <div>
                 <CardTitle>Glucose Logs</CardTitle>
@@ -165,7 +165,7 @@ export default function LogsPage() {
             </TableHeader>
             <TableBody>
               {glucoseLogs.length > 0 ? glucoseLogs.map(log => (
-                <TableRow key={log.id} data-state={selectedLogIds.includes(log.id) && "selected"} className="data-[state=selected]:bg-primary/20">
+                <TableRow key={log.id} data-state={selectedLogIds.includes(log.id) && "selected"} className="data-[state=selected]:bg-muted">
                   <TableCell>
                     <Checkbox
                       checked={selectedLogIds.includes(log.id)}
@@ -185,7 +185,7 @@ export default function LogsPage() {
                           <span className="sr-only">Toggle menu</span>
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="bg-glass-popover">
+                      <DropdownMenuContent align="end">
                         <DropdownMenuItem onSelect={() => handleEdit(log)} className="flex items-center gap-2"><Pencil className="h-4 w-4" /> Edit</DropdownMenuItem>
                         <DropdownMenuItem onSelect={() => handleDelete(log.id)} className="flex items-center gap-2 text-destructive"><Trash2 className="h-4 w-4" /> Delete</DropdownMenuItem>
                       </DropdownMenuContent>
@@ -203,7 +203,7 @@ export default function LogsPage() {
       </Card>
 
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent className="bg-glass">
+        <SheetContent>
           <SheetHeader>
             <SheetTitle>{editingLog ? 'Edit' : 'Add'} Glucose Log</SheetTitle>
             <SheetDescription>
@@ -223,7 +223,6 @@ export default function LogsPage() {
                         type="datetime-local"
                         defaultValue={field.value ? format(new Date(field.value), "yyyy-MM-dd'T'HH:mm") : ''}
                         onChange={(e) => field.onChange(e.target.value)}
-                         className="bg-background/50"
                       />
                     </FormControl>
                     <FormMessage />
@@ -236,7 +235,7 @@ export default function LogsPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Glycemia (g/L)</FormLabel>
-                    <FormControl><Input type="number" step="0.01" {...field} className="bg-background/50"/></FormControl>
+                    <FormControl><Input type="number" step="0.01" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -247,7 +246,7 @@ export default function LogsPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Novorapide Dosage</FormLabel>
-                    <FormControl><Input type="number" step="1" {...field} className="bg-background/50"/></FormControl>
+                    <FormControl><Input type="number" step="1" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -260,11 +259,11 @@ export default function LogsPage() {
                     <FormLabel>Meal Type</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger className="bg-background/50">
+                        <SelectTrigger>
                           <SelectValue placeholder="Select a meal type" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="bg-glass-popover">
+                      <SelectContent>
                         <SelectItem value="Breakfast">Breakfast</SelectItem>
                         <SelectItem value="Lunch">Lunch</SelectItem>
                         <SelectItem value="Dinner">Dinner</SelectItem>
@@ -288,7 +287,7 @@ export default function LogsPage() {
       </Sheet>
 
       <AlertDialog open={!!deletingLogId} onOpenChange={(open) => !open && setDeletingLogId(null)}>
-        <AlertDialogContent className="bg-glass">
+        <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
