@@ -37,7 +37,7 @@ import {
 import { calculateBMI } from '@/lib/utils';
 import type { MealType } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
-import { TrendingDown, TrendingUp, ArrowRight, Scale, Droplet, PlusCircle, Activity, BarChart, User } from 'lucide-react';
+import { TrendingDown, TrendingUp, ArrowRight, Scale, Droplet, PlusCircle, Activity, BarChart, User, BookText } from 'lucide-react';
 import Link from 'next/link';
 
 const glucoseLogSchema = z.object({
