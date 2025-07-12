@@ -4,19 +4,20 @@
 
 @layer base {
   :root {
-    --background-hsl: 180 100% 97%;
+    --background-hsl: 180 100% 97%; /* Very Pale Cyan */
     --background: hsl(var(--background-hsl));
     --foreground: 224 71% 4%;
 
-    --card-hsl: 0 0% 100%;
+    --card-hsl: 180 100% 97%; /* Match background for glass effect */
     --card: hsl(var(--card-hsl));
     --card-foreground: 224 71% 4%;
 
-    --popover-hsl: 0 0% 100%;
+    --popover-hsl: 180 100% 97%; /* Match background for glass effect */
     --popover: hsl(var(--popover-hsl));
     --popover-foreground: 224 71% 4%;
 
-    --primary: 197 90% 48%;
+    --primary-hsl: 197 80% 50%; /* Light Sky Blue */
+    --primary: hsl(var(--primary-hsl));
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -25,8 +26,8 @@
     --muted-hsl: 210 40% 96.1%;
     --muted: hsl(var(--muted-hsl));
     --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent-hsl: 276 60% 95%;
+    
+    --accent-hsl: 300 45% 85%; /* Pale Violet */
     --accent: hsl(var(--accent-hsl));
     --accent-foreground: 222.2 47.4% 11.2%;
 
@@ -36,7 +37,9 @@
     --border-hsl: 214.3 31.8% 91.4%;
     --border: hsl(var(--border-hsl));
     --input: 214.3 31.8% 91.4%;
-    --ring: 197 90% 48%;
+    
+    --ring-hsl: 197 80% 50%;
+    --ring: hsl(var(--ring-hsl));
     
     --radius: 0.5rem;
   }
@@ -54,7 +57,8 @@
     --popover: hsl(var(--popover-hsl));
     --popover-foreground: 180 20% 98%;
 
-    --primary: 197 71% 73%;
+    --primary-hsl: 197 71% 73%;
+    --primary: hsl(var(--primary-hsl));
     --primary-foreground: 197 90% 5%;
     
     --secondary: 220 15% 15%;
@@ -64,7 +68,7 @@
     --muted: hsl(var(--muted-hsl));
     --muted-foreground: 180 20% 80%;
 
-    --accent-hsl: 276 27% 25%;
+    --accent-hsl: 300 20% 30%;
     --accent: hsl(var(--accent-hsl));
     --accent-foreground: 180 20% 98%;
     
@@ -74,7 +78,9 @@
     --border-hsl: 220 15% 25%;
     --border: hsl(var(--border-hsl));
     --input: 220 15% 22%;
-    --ring: 197 71% 73%;
+    
+    --ring-hsl: 197 71% 73%;
+    --ring: hsl(var(--ring-hsl));
   }
 }
 
@@ -105,21 +111,21 @@
   }
 
   .bg-glass {
-      @apply bg-card/75 border border-white/10;
+      @apply bg-card/85 border border-white/10;
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
   }
 
   .dark .bg-glass {
-      @apply bg-card/60 border border-white/10;
+      @apply bg-card/75 border border-white/10;
   }
 
   .bg-glass-popover {
-      @apply bg-popover/85 border border-white/10;
+      @apply bg-popover/90 border border-white/10;
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
   }
   .dark .bg-glass-popover {
-      @apply bg-popover/80 border border-white/10;
+      @apply bg-popover/85 border border-white/10;
   }
 }
