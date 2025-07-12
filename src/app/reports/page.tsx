@@ -29,12 +29,12 @@ export default function ReportsPage() {
         const logDate = new Date(log.timestamp);
         return logDate >= startDate && logDate <= endDate;
       })
-      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(a.timestamp).getTime());
   }, [glucoseLogs, timeRange]);
 
   return (
     <AppLayout>
-      <Card>
+      <Card className="bg-glass">
         <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
             <CardTitle>Glucose Trends</CardTitle>
@@ -44,10 +44,10 @@ export default function ReportsPage() {
           </div>
           <div className="mt-4 md:mt-0">
             <Select value={timeRange} onValueChange={setTimeRange}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[180px] bg-transparent">
                 <SelectValue placeholder="Select time range" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-glass-popover">
                 <SelectItem value="7">Last 7 Days</SelectItem>
                 <SelectItem value="14">Last 14 Days</SelectItem>
                 <SelectItem value="30">Last 30 Days</SelectItem>
@@ -64,18 +64,23 @@ export default function ReportsPage() {
             ) : filteredData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={filteredData}>
-                    <CartesianGrid strokeDasharray="3 3" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)" />
                     <XAxis 
                         dataKey="timestamp" 
                         tickFormatter={(str) => format(new Date(str), 'MMM d')}
+                        stroke="hsl(var(--foreground))"
                         />
-                    <YAxis domain={['dataMin - 0.2', 'dataMax + 0.2']} />
+                    <YAxis 
+                        domain={['dataMin - 0.2', 'dataMax + 0.2']} 
+                        stroke="hsl(var(--foreground))"
+                    />
                     <Tooltip 
                         labelFormatter={(label) => format(new Date(label), 'PPP p')}
                         formatter={(value) => [`${value} g/L`, 'Glycemia']}
                         contentStyle={{
-                            backgroundColor: 'hsl(var(--background))',
-                            borderColor: 'hsl(var(--border))'
+                            backgroundColor: 'hsl(var(--background) / 0.8)',
+                            borderColor: 'hsl(var(--border))',
+                            backdropFilter: 'blur(4px)',
                         }}
                     />
                     <Line 

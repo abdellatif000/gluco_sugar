@@ -116,7 +116,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <Card>
+          <Card className="bg-glass">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Latest Glucose</CardTitle>
               <Droplet className="h-4 w-4 text-muted-foreground" />
@@ -135,7 +135,7 @@ export default function DashboardPage() {
               )}
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-glass">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">BMI</CardTitle>
               <Scale className="h-4 w-4 text-muted-foreground" />
@@ -151,7 +151,7 @@ export default function DashboardPage() {
               )}
             </CardContent>
           </Card>
-           <Card className="lg:col-span-1">
+           <Card className="lg:col-span-1 bg-glass">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Quick Navigation</CardTitle>
             </CardHeader>
@@ -169,7 +169,7 @@ export default function DashboardPage() {
           </Card>
         </div>
 
-        <Card>
+        <Card className="bg-glass">
           <CardHeader>
             <div className="flex items-center gap-2">
                 <PlusCircle className="h-6 w-6 text-primary"/>
@@ -190,7 +190,7 @@ export default function DashboardPage() {
                       <FormItem>
                         <FormLabel>Glycemia (g/L)</FormLabel>
                         <FormControl>
-                          <Input type="number" step="0.01" {...field} />
+                          <Input type="number" step="0.01" {...field} className="bg-transparent" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -203,7 +203,7 @@ export default function DashboardPage() {
                       <FormItem>
                         <FormLabel>Novorapide Dosage</FormLabel>
                         <FormControl>
-                          <Input type="number" step="1" {...field} />
+                          <Input type="number" step="1" {...field} className="bg-transparent" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -217,11 +217,11 @@ export default function DashboardPage() {
                         <FormLabel>Meal Type</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger className="bg-transparent">
                               <SelectValue placeholder="Select a meal type" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
+                          <SelectContent className="bg-glass-popover">
                             <SelectItem value="Breakfast">Breakfast</SelectItem>
                             <SelectItem value="Lunch">Lunch</SelectItem>
                             <SelectItem value="Dinner">Dinner</SelectItem>

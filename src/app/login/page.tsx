@@ -64,13 +64,13 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+    <div className="flex min-h-screen items-center justify-center bg-transparent p-4">
       <div className="w-full max-w-md">
         <div className="flex justify-center items-center gap-2 mb-6">
             <HeartPulse className="h-8 w-8 text-primary" />
             <h1 className="text-3xl font-bold text-primary">GlucoTrack</h1>
         </div>
-        <Card>
+        <Card className="bg-glass">
             <CardHeader className="text-center">
                 <CardTitle className="text-2xl">Welcome Back</CardTitle>
                 <CardDescription>Enter your credentials to access your dashboard.</CardDescription>
@@ -79,7 +79,7 @@ export default function LoginPage() {
             <form onSubmit={form.handleSubmit(onSubmit)}>
                 <CardContent className="space-y-4">
                 {error && (
-                    <Alert variant="destructive">
+                    <Alert variant="destructive" className="bg-destructive/20 border-destructive">
                       <AlertTriangle className="h-4 w-4" />
                       <AlertTitle>Login Failed</AlertTitle>
                       <AlertDescription>{error}</AlertDescription>
@@ -92,7 +92,7 @@ export default function LoginPage() {
                     <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                        <Input type="email" placeholder="john.doe@example.com" {...field} />
+                        <Input type="email" placeholder="john.doe@example.com" {...field} className="bg-transparent" />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -105,7 +105,7 @@ export default function LoginPage() {
                     <FormItem>
                         <FormLabel>Password</FormLabel>
                         <FormControl>
-                        <Input type="password" placeholder="••••••••" {...field} />
+                        <Input type="password" placeholder="••••••••" {...field} className="bg-transparent" />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
