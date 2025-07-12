@@ -20,7 +20,6 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 import { useApp } from "@/context/app-context";
 import { useEffect } from "react";
-import { Skeleton } from "./ui/skeleton";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -30,7 +29,7 @@ const navItems = [
   { href: "/profile", label: "Profile", icon: User },
 ];
 
-const NavLinks = ({ closeSheet }: { closeSheet?: () => void }) => {
+const NavLinks = () => {
   const pathname = usePathname();
   return (
     <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
@@ -38,7 +37,6 @@ const NavLinks = ({ closeSheet }: { closeSheet?: () => void }) => {
         <Link
           key={label}
           href={href}
-          onClick={closeSheet}
           className={cn(
             "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
             pathname === href && "bg-muted text-primary"
@@ -53,7 +51,6 @@ const NavLinks = ({ closeSheet }: { closeSheet?: () => void }) => {
 };
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
   const { authState, logout, user } = useApp();
   const router = useRouter();
 
@@ -65,7 +62,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (authState === 'loading' || authState === 'loggedOut') {
     return (
-        <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="flex items-center justify-center min-h-screen">
             <Loader2 className="h-8 w-8 animate-spin text-primary"/>
         </div>
     );
@@ -76,24 +73,27 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     router.push('/login');
   };
 
-  const MobileNavContent = () => (
-    <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-      {navItems.map(({ href, label, icon: Icon }) => (
-        <SheetClose asChild key={label}>
-          <Link
-            href={href}
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
-              pathname === href && "bg-muted text-primary"
-            )}
-          >
-            <Icon className="h-4 w-4" />
-            {label}
-          </Link>
-        </SheetClose>
-      ))}
-    </nav>
-  );
+  const MobileNavContent = () => {
+    const pathname = usePathname();
+    return (
+      <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
+        {navItems.map(({ href, label, icon: Icon }) => (
+          <SheetClose asChild key={label}>
+            <Link
+              href={href}
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
+                pathname === href && "bg-muted text-primary"
+              )}
+            >
+              <Icon className="h-4 w-4" />
+              {label}
+            </Link>
+          </SheetClose>
+        ))}
+      </nav>
+    );
+  };
 
 
   return (
@@ -157,7 +157,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
           <ThemeToggle />
         </header>
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
+        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
           {children}
         </main>
       </div>

@@ -23,7 +23,6 @@
     --border: 197 20% 85%;
     --input: 197 20% 88%;
     --ring: 197 90% 48%;
-    --radius: 0.5rem;
   }
  
   .dark {
@@ -54,7 +53,24 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    background-image: url('https://images.unsplash.com/photo-1576091160550-2173dba9996a?w=1920&q=50');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: hsla(var(--background), 0.8);
+    z-index: -1;
   }
 }
