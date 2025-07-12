@@ -32,10 +32,10 @@ import { Separator } from '@/components/ui/separator';
 
 const profileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
-  height: z.coerce.number().min(1, "Height must be positive."),
-  birthdate: z.string().refine((val) => !isNaN(Date.parse(val)), {
+  height: z.coerce.number().min(1, "Height must be positive.").nullable(),
+  birthdate: z.string().refine((val) => !val || !isNaN(Date.parse(val)), {
     message: "Invalid date format.",
-  }),
+  }).nullable(),
 });
 
 const weightSchema = z.object({
@@ -69,8 +69,8 @@ export default function ProfilePage() {
   const [selectedWeightIds, setSelectedWeightIds] = useState<string[]>([]);
 
   const latestWeight = weightHistory[0]?.weight;
-  const bmi = profile ? calculateBMI(profile.height, latestWeight) : null;
-  const age = profile ? calculateAge(profile.birthdate) : null;
+  const bmi = (profile && profile.height) ? calculateBMI(profile.height, latestWeight) : null;
+  const age = (profile && profile.birthdate) ? calculateAge(profile.birthdate) : null;
 
   const profileForm = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
@@ -211,7 +211,7 @@ export default function ProfilePage() {
                                 render={({ field }) => (
                                     <DetailRow label="Birthdate" isEditing={isEditingProfile} value={profile.birthdate ? `${format(new Date(profile.birthdate), 'PPP')} (${age} years old)` : 'Not set'}>
                                          <FormControl>
-                                            <Input type="date" {...field} />
+                                            <Input type="date" {...field} value={field.value ?? ''}/>
                                          </FormControl>
                                     </DetailRow>
                                 )}
@@ -220,9 +220,9 @@ export default function ProfilePage() {
                                 control={profileForm.control}
                                 name="height"
                                 render={({ field }) => (
-                                    <DetailRow label="Height (cm)" isEditing={isEditingProfile} value={profile.height > 0 ? profile.height : 'Not set'}>
+                                    <DetailRow label="Height (cm)" isEditing={isEditingProfile} value={(profile.height && profile.height > 0) ? profile.height : 'Not set'}>
                                         <FormControl>
-                                            <Input type="number" {...field} />
+                                            <Input type="number" {...field} value={field.value ?? ''} />
                                         </FormControl>
                                     </DetailRow>
                                 )}
@@ -258,8 +258,8 @@ export default function ProfilePage() {
                         <span className="text-muted-foreground">BMI:</span>
                         <span className="font-bold text-xl">{bmi || 'N/A'}</span>
                     </div>
-                    {bmi && <p className="text-xs text-muted-foreground">(Based on {latestWeight}kg & {profile.height}cm)</p>}
-                    {!bmi && <p className="text-sm text-muted-foreground pt-2">Enter your weight to calculate BMI.</p>}
+                    {bmi && profile.height && <p className="text-xs text-muted-foreground">(Based on {latestWeight}kg & {profile.height}cm)</p>}
+                    {!bmi && <p className="text-sm text-muted-foreground pt-2">Enter your weight & height to calculate BMI.</p>}
                 </CardContent>
             </Card>
         </div>

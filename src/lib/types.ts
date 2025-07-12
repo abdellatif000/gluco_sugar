@@ -18,8 +18,8 @@ export interface WeightEntry {
 export interface UserProfile {
   id: string;
   name: string;
-  birthdate: string; // ISO string
-  height: number; // in cm
+  birthdate: string | null; // ISO string or null
+  height: number | null; // in cm or null
   email: string;
 }
 
