@@ -36,7 +36,7 @@ import {
 import { calculateBMI } from '@/lib/utils';
 import type { MealType } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
-import { TrendingDown, TrendingUp, TrendingRight, Scale, Droplet } from 'lucide-react';
+import { TrendingDown, TrendingUp, ArrowRight, Scale, Droplet } from 'lucide-react';
 
 const glucoseLogSchema = z.object({
   glycemia: z.coerce.number().min(0.1, 'Glycemia is required.'),
@@ -61,10 +61,10 @@ export default function DashboardPage() {
   const previousLog = glucoseLogs[1];
 
   const trend = useMemo(() => {
-    if (!latestLog || !previousLog) return { icon: TrendingRight, color: '' };
+    if (!latestLog || !previousLog) return { icon: ArrowRight, color: '' };
     if (latestLog.glycemia > previousLog.glycemia) return { icon: TrendingUp, color: 'text-destructive' };
     if (latestLog.glycemia < previousLog.glycemia) return { icon: TrendingDown, color: 'text-green-500' };
-    return { icon: TrendingRight, color: '' };
+    return { icon: ArrowRight, color: '' };
   }, [latestLog, previousLog]);
   
   const TrendIcon = trend.icon;
