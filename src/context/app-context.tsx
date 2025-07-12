@@ -44,9 +44,11 @@ interface AppContextType {
   addWeightEntry: (weight: number) => Promise<void>;
   updateWeightEntry: (entry: WeightEntry) => Promise<void>;
   deleteWeightEntry: (id: string) => Promise<void>;
+  deleteMultipleWeightEntries: (ids: string[]) => Promise<void>;
   addGlucoseLog: (log: Omit<GlucoseLog, 'id' | 'timestamp'> & { timestamp?: string }) => Promise<void>;
   updateGlucoseLog: (log: GlucoseLog) => Promise<void>;
   deleteGlucoseLog: (id: string) => Promise<void>;
+  deleteMultipleGlucoseLogs: (ids: string[]) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -165,6 +167,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     weightHistoryStore[user.id] = sortedHistory;
     setWeightHistory(sortedHistory);
   };
+
+  const deleteMultipleWeightEntries = async (ids: string[]) => {
+    if (!user) throw new Error("User not authenticated.");
+    const idSet = new Set(ids);
+    const sortedHistory = (weightHistoryStore[user.id] || [])
+      .filter(entry => !idSet.has(entry.id))
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    weightHistoryStore[user.id] = sortedHistory;
+    setWeightHistory(sortedHistory);
+  };
   
   const addGlucoseLog = async (log: Omit<GlucoseLog, 'id' | 'timestamp'> & { timestamp?: string }) => {
     if (!user) throw new Error("User not authenticated.");
@@ -197,6 +209,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setGlucoseLogs(sortedLogs);
   };
 
+  const deleteMultipleGlucoseLogs = async (ids: string[]) => {
+    if (!user) throw new Error("User not authenticated.");
+    const idSet = new Set(ids);
+    const sortedLogs = (glucoseLogsStore[user.id] || [])
+        .filter(log => !idSet.has(log.id))
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    glucoseLogsStore[user.id] = sortedLogs;
+    setGlucoseLogs(sortedLogs);
+  };
+
   const contextValue = useMemo(() => ({
     authState,
     user,
@@ -210,9 +232,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     addWeightEntry,
     updateWeightEntry,
     deleteWeightEntry,
+    deleteMultipleWeightEntries,
     addGlucoseLog,
     updateGlucoseLog,
     deleteGlucoseLog,
+    deleteMultipleGlucoseLogs,
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [profile, weightHistory, glucoseLogs, authState, user]);
 

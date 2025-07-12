@@ -27,6 +27,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import type { WeightEntry } from '@/lib/types';
+import { Checkbox } from "@/components/ui/checkbox";
 
 
 const profileSchema = z.object({
@@ -48,13 +49,14 @@ const editWeightSchema = z.object({
 });
 
 export default function ProfilePage() {
-  const { profile, weightHistory, updateProfile, addWeightEntry, updateWeightEntry, deleteWeightEntry } = useApp();
+  const { profile, weightHistory, updateProfile, addWeightEntry, updateWeightEntry, deleteWeightEntry, deleteMultipleWeightEntries } = useApp();
   const { toast } = useToast();
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   
   const [editingWeight, setEditingWeight] = useState<WeightEntry | null>(null);
   const [deletingWeightId, setDeletingWeightId] = useState<string | null>(null);
+  const [selectedWeightIds, setSelectedWeightIds] = useState<string[]>([]);
 
   const latestWeight = weightHistory[0]?.weight;
   const bmi = profile ? calculateBMI(profile.height, latestWeight) : null;
@@ -72,6 +74,7 @@ export default function ProfilePage() {
   
   const editWeightForm = useForm<z.infer<typeof editWeightSchema>>({
     resolver: zodResolver(editWeightSchema),
+    defaultValues: { id: '', date: '', weight: 0 },
   });
 
   const resetProfileForm = () => {
@@ -136,6 +139,31 @@ export default function ProfilePage() {
     }
   };
   
+  const handleSelectWeight = (id: string, checked: boolean | string) => {
+    if (checked) {
+        setSelectedWeightIds((prev) => [...prev, id]);
+    } else {
+        setSelectedWeightIds((prev) => prev.filter((weightId) => weightId !== id));
+    }
+  };
+
+  const handleSelectAllWeights = (checked: boolean | string) => {
+      if (checked) {
+          setSelectedWeightIds(weightHistory.map((entry) => entry.id));
+      } else {
+          setSelectedWeightIds([]);
+      }
+  };
+
+  const handleDeleteSelected = () => {
+      deleteMultipleWeightEntries(selectedWeightIds);
+      toast({
+          title: 'Success',
+          description: `${selectedWeightIds.length} weight(s) deleted.`,
+      });
+      setSelectedWeightIds([]);
+  };
+
   if (!profile) return (
     <AppLayout>
         <div className="flex items-center justify-center h-full">
@@ -259,6 +287,13 @@ export default function ProfilePage() {
                         <Table>
                             <TableHeader>
                             <TableRow>
+                                <TableHead className="w-[50px]">
+                                  <Checkbox
+                                      checked={selectedWeightIds.length === weightHistory.length && weightHistory.length > 0}
+                                      onCheckedChange={handleSelectAllWeights}
+                                      aria-label="Select all"
+                                  />
+                                </TableHead>
                                 <TableHead>Date</TableHead>
                                 <TableHead className="text-right">Weight (kg)</TableHead>
                                 <TableHead><span className="sr-only">Actions</span></TableHead>
@@ -266,7 +301,14 @@ export default function ProfilePage() {
                             </TableHeader>
                             <TableBody>
                             {weightHistory.map((entry) => (
-                                <TableRow key={entry.id}>
+                                <TableRow key={entry.id} data-state={selectedWeightIds.includes(entry.id) && "selected"}>
+                                <TableCell>
+                                    <Checkbox
+                                        checked={selectedWeightIds.includes(entry.id)}
+                                        onCheckedChange={(checked) => handleSelectWeight(entry.id, checked)}
+                                        aria-label={`Select weight entry from ${format(new Date(entry.date), 'PPP')}`}
+                                    />
+                                </TableCell>
                                 <TableCell>{format(new Date(entry.date), 'PPP')}</TableCell>
                                 <TableCell className="text-right">{entry.weight.toFixed(1)}</TableCell>
                                 <TableCell className="text-right">
@@ -293,8 +335,14 @@ export default function ProfilePage() {
                         </Table>
                     </div>
                 </CardContent>
-                <CardFooter>
+                <CardFooter className="gap-2">
                     <Button type="submit">Add Weight</Button>
+                    {selectedWeightIds.length > 0 && (
+                        <Button variant="destructive" onClick={handleDeleteSelected}>
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Delete ({selectedWeightIds.length})
+                        </Button>
+                    )}
                 </CardFooter>
             </form>
           </Form>

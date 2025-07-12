@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -19,6 +20,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
+import { Checkbox } from "@/components/ui/checkbox";
+
 
 const glucoseLogSchema = z.object({
   id: z.string().optional(),
@@ -31,10 +34,11 @@ const glucoseLogSchema = z.object({
 type FormData = z.infer<typeof glucoseLogSchema>;
 
 export default function LogsPage() {
-  const { glucoseLogs, addGlucoseLog, updateGlucoseLog, deleteGlucoseLog } = useApp();
+  const { glucoseLogs, addGlucoseLog, updateGlucoseLog, deleteGlucoseLog, deleteMultipleGlucoseLogs } = useApp();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [editingLog, setEditingLog] = useState<GlucoseLog | null>(null);
   const [deletingLogId, setDeletingLogId] = useState<string | null>(null);
+  const [selectedLogIds, setSelectedLogIds] = useState<string[]>([]);
   const { toast } = useToast();
 
   const form = useForm<FormData>({
@@ -90,6 +94,31 @@ export default function LogsPage() {
     setIsSheetOpen(false);
     setEditingLog(null);
   };
+  
+  const handleSelectLog = (id: string, checked: boolean | string) => {
+    if (checked) {
+      setSelectedLogIds(prev => [...prev, id]);
+    } else {
+      setSelectedLogIds(prev => prev.filter(logId => logId !== id));
+    }
+  };
+
+  const handleSelectAllLogs = (checked: boolean | string) => {
+    if (checked) {
+      setSelectedLogIds(glucoseLogs.map(log => log.id));
+    } else {
+      setSelectedLogIds([]);
+    }
+  };
+
+  const handleDeleteSelected = () => {
+    deleteMultipleGlucoseLogs(selectedLogIds);
+    toast({
+      title: 'Success',
+      description: `${selectedLogIds.length} log(s) deleted.`,
+    });
+    setSelectedLogIds([]);
+  };
 
   return (
     <AppLayout>
@@ -99,17 +128,32 @@ export default function LogsPage() {
                 <CardTitle>Glucose Logs</CardTitle>
                 <CardDescription>View, manage, and add your glucose readings.</CardDescription>
             </div>
-            <Button size="sm" className="gap-1" onClick={handleAddNew}>
-                <PlusCircle className="h-3.5 w-3.5" />
-                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Add Log
-                </span>
-            </Button>
+            <div className="flex items-center gap-2">
+              {selectedLogIds.length > 0 && (
+                <Button variant="destructive" size="sm" onClick={handleDeleteSelected}>
+                  <Trash2 className="h-3.5 w-3.5 mr-1" />
+                  Delete ({selectedLogIds.length})
+                </Button>
+              )}
+              <Button size="sm" className="gap-1" onClick={handleAddNew}>
+                  <PlusCircle className="h-3.5 w-3.5" />
+                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                      Add Log
+                  </span>
+              </Button>
+            </div>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
+                 <TableHead className="w-[50px]">
+                  <Checkbox
+                    checked={selectedLogIds.length === glucoseLogs.length && glucoseLogs.length > 0}
+                    onCheckedChange={handleSelectAllLogs}
+                    aria-label="Select all"
+                  />
+                </TableHead>
                 <TableHead>Date & Time</TableHead>
                 <TableHead>Meal Type</TableHead>
                 <TableHead>Glycemia (g/L)</TableHead>
@@ -121,7 +165,14 @@ export default function LogsPage() {
             </TableHeader>
             <TableBody>
               {glucoseLogs.length > 0 ? glucoseLogs.map(log => (
-                <TableRow key={log.id}>
+                <TableRow key={log.id} data-state={selectedLogIds.includes(log.id) && "selected"}>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedLogIds.includes(log.id)}
+                      onCheckedChange={(checked) => handleSelectLog(log.id, checked)}
+                      aria-label={`Select log from ${format(new Date(log.timestamp), 'Pp')}`}
+                    />
+                  </TableCell>
                   <TableCell className="font-medium">{format(new Date(log.timestamp), 'Pp')}</TableCell>
                   <TableCell>{log.mealType}</TableCell>
                   <TableCell>{log.glycemia.toFixed(2)}</TableCell>
@@ -143,7 +194,7 @@ export default function LogsPage() {
                 </TableRow>
               )) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center">No logs found.</TableCell>
+                  <TableCell colSpan={6} className="text-center">No logs found.</TableCell>
                 </TableRow>
               )}
             </TableBody>
@@ -170,7 +221,7 @@ export default function LogsPage() {
                     <FormControl>
                       <Input
                         type="datetime-local"
-                        value={field.value ? format(new Date(field.value), "yyyy-MM-dd'T'HH:mm") : ''}
+                        defaultValue={field.value ? format(new Date(field.value), "yyyy-MM-dd'T'HH:mm") : ''}
                         onChange={(e) => field.onChange(e.target.value)}
                       />
                     </FormControl>
