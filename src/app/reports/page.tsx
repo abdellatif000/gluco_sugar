@@ -1,16 +1,23 @@
+
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { AppLayout } from '@/components/AppLayout';
 import { useApp } from '@/context/app-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { format, subDays } from 'date-fns';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ReportsPage() {
   const { glucoseLogs } = useApp();
   const [timeRange, setTimeRange] = useState('7'); // Default to 7 days
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const filteredData = useMemo(() => {
     const days = parseInt(timeRange);
@@ -50,7 +57,11 @@ export default function ReportsPage() {
         </CardHeader>
         <CardContent>
           <div className="h-[400px]">
-            {filteredData.length > 0 ? (
+            {!isClient ? (
+                <div className="flex items-center justify-center h-full">
+                    <Skeleton className="w-full h-full" />
+                </div>
+            ) : filteredData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={filteredData}>
                     <CartesianGrid strokeDasharray="3 3" />
