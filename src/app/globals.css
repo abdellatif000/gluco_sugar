@@ -111,13 +111,13 @@
   }
 
   .bg-glass {
-      @apply bg-card/75 border border-white/10;
+      @apply bg-white/10 border border-white/10;
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
   }
 
   .dark .bg-glass {
-      @apply bg-card/75 border border-white/10;
+      @apply bg-black/20 border-white/10;
   }
 
   .bg-glass-popover {
