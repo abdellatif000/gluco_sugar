@@ -86,7 +86,7 @@
 }
 
 @layer components {
-    .card, .popover, [role="dialog"], .sheet-content, .bg-muted\/50 {
+    .card, .popover, [role="dialog"], .sheet-content, .bg-muted\/50, [role="alert"] {
         background-color: hsla(var(--muted), 0.5) !important;
         backdrop-filter: blur(12px) saturate(120%);
         border: 1px solid hsla(var(--border), 0.3) !important;
