@@ -8,11 +8,11 @@
     --background: hsl(var(--background-hsl));
     --foreground: 224 71% 4%;
 
-    --card-hsl: 180 100% 97%; /* Match background for glass effect */
+    --card-hsl: 210 20% 98%; /* Lighter grey for light mode cards */
     --card: hsl(var(--card-hsl));
     --card-foreground: 224 71% 4%;
 
-    --popover-hsl: 180 100% 97%; /* Match background for glass effect */
+    --popover-hsl: 210 20% 98%; /* Match card color */
     --popover: hsl(var(--popover-hsl));
     --popover-foreground: 224 71% 4%;
 
@@ -49,11 +49,11 @@
     --background: hsl(var(--background-hsl));
     --foreground: 180 20% 98%;
 
-    --card-hsl: 220 15% 10%;
+    --card-hsl: 220 15% 10%; /* Dark grey for dark mode cards */
     --card: hsl(var(--card-hsl));
     --card-foreground: 180 20% 98%;
 
-    --popover-hsl: 220 15% 7%;
+    --popover-hsl: 220 15% 10%; /* Match card color */
     --popover: hsl(var(--popover-hsl));
     --popover-foreground: 180 20% 98%;
 
@@ -111,21 +111,21 @@
   }
 
   .bg-glass {
-      @apply bg-card/85 border border-white/10;
+      @apply bg-card/60 border border-white/10;
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
   }
 
   .dark .bg-glass {
-      @apply bg-card/75 border border-white/10;
+      @apply bg-card/60 border border-white/10;
   }
 
   .bg-glass-popover {
-      @apply bg-popover/90 border border-white/10;
+      @apply bg-popover/75 border border-white/10;
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
   }
   .dark .bg-glass-popover {
-      @apply bg-popover/85 border border-white/10;
+      @apply bg-popover/75 border border-white/10;
   }
 }
