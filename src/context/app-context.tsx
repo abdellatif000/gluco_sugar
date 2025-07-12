@@ -5,10 +5,31 @@ import type { ReactNode } from 'react';
 import { createContext, useContext, useState, useMemo, useEffect } from 'react';
 import type { UserProfile, WeightEntry, GlucoseLog, MealType, AuthState, AppUser } from '@/lib/types';
 import { subDays, formatISO } from 'date-fns';
-import { onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile as updateFirebaseProfile } from 'firebase/auth';
-import { auth, db } from '@/lib/firebase';
-import { doc, setDoc, getDoc, collection, addDoc, getDocs, query, where, orderBy, deleteDoc, updateDoc } from 'firebase/firestore';
 
+// In-memory data store
+let users: (UserProfile & { password?: string })[] = [];
+let weightHistoryStore: { [userId: string]: WeightEntry[] } = {};
+let glucoseLogsStore: { [userId: string]: GlucoseLog[] } = {};
+
+const createInitialData = (userId: string) => {
+    if (!glucoseLogsStore[userId] || glucoseLogsStore[userId].length === 0) {
+        glucoseLogsStore[userId] = Array.from({ length: 30 }, (_, i) => ({
+            id: `log${i}`,
+            timestamp: formatISO(subDays(new Date(), i)),
+            mealType: (['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Fasting'] as MealType[])[i % 5],
+            glycemia: parseFloat((Math.random() * (2.5 - 0.7) + 0.7).toFixed(2)),
+            dosage: Math.floor(Math.random() * 10),
+        })).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    }
+
+    if (!weightHistoryStore[userId] || weightHistoryStore[userId].length === 0) {
+        weightHistoryStore[userId] = Array.from({ length: 4 }, (_, i) => ({
+            id: `weight${i}`,
+            date: formatISO(subDays(new Date(), i * 7)),
+            weight: parseFloat((Math.random() * (85 - 75) + 75).toFixed(1)),
+        })).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    }
+};
 
 interface AppContextType {
   authState: AuthState;
@@ -36,118 +57,116 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [glucoseLogs, setGlucoseLogs] = useState<GlucoseLog[]>([]);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        setUser(firebaseUser);
-        const userRef = doc(db, "users", firebaseUser.uid);
-        const docSnap = await getDoc(userRef);
-        if (docSnap.exists()) {
-          setProfile({ ...docSnap.data(), email: firebaseUser.email! } as UserProfile);
-        } else {
-            const newProfile: UserProfile = {
-                name: firebaseUser.displayName || 'New User',
-                email: firebaseUser.email!,
-                birthdate: '',
-                height: 0,
-            };
-            await setDoc(userRef, {name: newProfile.name, height: newProfile.height, birthdate: newProfile.birthdate});
-            setProfile(newProfile);
-        }
+    // Simulate checking auth state on load
+    const loggedInUserEmail = localStorage.getItem('loggedInUser');
+    if (loggedInUserEmail) {
+      const foundUser = users.find(u => u.email === loggedInUserEmail);
+      if (foundUser) {
+        const appUser = { id: foundUser.id, email: foundUser.email, displayName: foundUser.name };
+        setUser(appUser);
+        setProfile(foundUser);
         setAuthState('loggedIn');
+        
+        createInitialData(foundUser.id);
+        setWeightHistory(weightHistoryStore[foundUser.id] || []);
+        setGlucoseLogs(glucoseLogsStore[foundUser.id] || []);
+
       } else {
-        setUser(null);
-        setProfile(null);
         setAuthState('loggedOut');
       }
-    });
-
-    return () => unsubscribe();
+    } else {
+      setAuthState('loggedOut');
+    }
   }, []);
 
   const signup = async (email: string, password: string, name: string) => {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await updateFirebaseProfile(userCredential.user, { displayName: name });
-      const userRef = doc(db, "users", userCredential.user.uid);
-      const newProfile: Omit<UserProfile, 'email'> = {
-          name: name,
-          birthdate: '',
-          height: 0,
-      };
-      await setDoc(userRef, newProfile);
-      setProfile({ ...newProfile, email: userCredential.user.email! });
-      setUser(userCredential.user);
-      setAuthState('loggedIn');
+    if (users.some(u => u.email === email)) {
+      throw new Error("An account with this email already exists.");
+    }
+    const id = `user_${Date.now()}`;
+    const newUser: UserProfile & {password: string} = {
+      id,
+      name,
+      email,
+      password,
+      birthdate: '',
+      height: 0,
+    };
+    users.push(newUser);
+    
+    const appUser = { id: newUser.id, email: newUser.email, displayName: newUser.name };
+    setUser(appUser);
+    setProfile(newUser);
+    setAuthState('loggedIn');
+    localStorage.setItem('loggedInUser', email);
+    
+    createInitialData(id);
+    setWeightHistory(weightHistoryStore[id] || []);
+    setGlucoseLogs(glucoseLogsStore[id] || []);
   };
 
   const login = async (email: string, password: string) => {
-      await signInWithEmailAndPassword(auth, email, password);
+    const foundUser = users.find(u => u.email === email);
+    if (!foundUser || foundUser.password !== password) {
+      throw new Error("Invalid email or password.");
+    }
+
+    const appUser = { id: foundUser.id, email: foundUser.email, displayName: foundUser.name };
+    setUser(appUser);
+    setProfile(foundUser);
+    setAuthState('loggedIn');
+    localStorage.setItem('loggedInUser', email);
+
+    createInitialData(foundUser.id);
+    setWeightHistory(weightHistoryStore[foundUser.id] || []);
+    setGlucoseLogs(glucoseLogsStore[foundUser.id] || []);
   };
 
   const logout = async () => {
-      await signOut(auth);
+    setUser(null);
+    setProfile(null);
+    setWeightHistory([]);
+    setGlucoseLogs([]);
+    setAuthState('loggedOut');
+    localStorage.removeItem('loggedInUser');
   };
   
   const updateProfileData = async (newProfileData: Partial<UserProfile>) => {
     if (!user) throw new Error("User not authenticated.");
-    const userRef = doc(db, "users", user.uid);
-    await updateDoc(userRef, newProfileData);
+    users = users.map(u => u.id === user.id ? { ...u, ...newProfileData } : u);
     setProfile(p => p ? { ...p, ...newProfileData } : null);
   };
   
-  const fetchWeightHistory = async (userId: string) => {
-    const q = query(collection(db, `users/${userId}/weightHistory`), orderBy('date', 'desc'));
-    const querySnapshot = await getDocs(q);
-    const history = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as WeightEntry));
-    setWeightHistory(history);
-  };
-
   const addWeightEntry = async (weight: number) => {
     if (!user) throw new Error("User not authenticated.");
-    const newEntry = { weight, date: formatISO(new Date()) };
-    const docRef = await addDoc(collection(db, `users/${user.uid}/weightHistory`), newEntry);
-    setWeightHistory(prev => [{ id: docRef.id, ...newEntry }, ...prev]);
+    const newEntry: WeightEntry = { id: `weight_${Date.now()}`, weight, date: formatISO(new Date()) };
+    weightHistoryStore[user.id] = [newEntry, ...(weightHistoryStore[user.id] || [])];
+    setWeightHistory(weightHistoryStore[user.id]);
   };
   
-  const fetchGlucoseLogs = async (userId: string) => {
-    const q = query(collection(db, `users/${userId}/glucoseLogs`), orderBy('timestamp', 'desc'));
-    const querySnapshot = await getDocs(q);
-    const logs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as GlucoseLog));
-    setGlucoseLogs(logs);
-  };
-
   const addGlucoseLog = async (log: Omit<GlucoseLog, 'id' | 'timestamp'> & { timestamp?: string }) => {
     if (!user) throw new Error("User not authenticated.");
-    const newLog = {
+    const newLog: GlucoseLog = {
+      id: `gl_${Date.now()}`,
       ...log,
       timestamp: log.timestamp || formatISO(new Date()),
     };
-    const docRef = await addDoc(collection(db, `users/${user.uid}/glucoseLogs`), newLog);
-    setGlucoseLogs(prev => [{ id: docRef.id, ...newLog }, ...prev]);
+    glucoseLogsStore[user.id] = [newLog, ...(glucoseLogsStore[user.id] || [])];
+    setGlucoseLogs(glucoseLogsStore[user.id]);
   };
   
   const updateGlucoseLog = async (updatedLog: GlucoseLog) => {
     if (!user) throw new Error("User not authenticated.");
-    const logRef = doc(db, `users/${user.uid}/glucoseLogs`, updatedLog.id);
-    await updateDoc(logRef, updatedLog);
-    setGlucoseLogs(prev => prev.map(log => log.id === updatedLog.id ? updatedLog : log));
+    glucoseLogsStore[user.id] = (glucoseLogsStore[user.id] || []).map(log => log.id === updatedLog.id ? updatedLog : log);
+    setGlucoseLogs(glucoseLogsStore[user.id]);
   };
   
   const deleteGlucoseLog = async (id: string) => {
     if (!user) throw new Error("User not authenticated.");
-    await deleteDoc(doc(db, `users/${user.uid}/glucoseLogs`, id));
-    setGlucoseLogs(prev => prev.filter(log => log.id !== id));
+    glucoseLogsStore[user.id] = (glucoseLogsStore[user.id] || []).filter(log => log.id !== id);
+    setGlucoseLogs(glucoseLogsStore[user.id]);
   };
 
-  useEffect(() => {
-    if (authState === 'loggedIn' && user) {
-        fetchWeightHistory(user.uid);
-        fetchGlucoseLogs(user.uid);
-    } else {
-        setWeightHistory([]);
-        setGlucoseLogs([]);
-    }
-  }, [authState, user]);
-  
   const contextValue = useMemo(() => ({
     authState,
     user,
