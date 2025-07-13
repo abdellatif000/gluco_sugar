@@ -31,7 +31,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
-  const [authState, setAuthState] = useState<AuthState>('loggedOut');
+  const [authState, setAuthState] = useState<AuthState>('loading');
   const [user, setUser] = useState<AppUser | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [weightHistory, setWeightHistory] = useState<WeightEntry[]>([]);
