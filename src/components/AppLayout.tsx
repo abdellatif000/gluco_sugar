@@ -19,7 +19,9 @@ import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/s
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 import { useApp } from "@/context/app-context";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import * as db from '@/app/db-actions';
+import type { AppUser } from "@/lib/types";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -51,20 +53,41 @@ const NavLinks = () => {
 };
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
-  const { authState, logout, user } = useApp();
+  const { authState, logout, user, loadInitialData } = useApp();
   const router = useRouter();
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
 
   useEffect(() => {
-    if (authState === 'loggedOut') {
-      router.push('/login');
-    }
-  }, [authState, router]);
+    const checkUserSession = async () => {
+      try {
+        const sessionUser = await db.checkSession();
+        if (sessionUser) {
+          await loadInitialData(sessionUser);
+        } else {
+          router.push('/login');
+        }
+      } catch (error) {
+        console.error("Session check failed:", error);
+        router.push('/login');
+      } finally {
+        setIsCheckingSession(false);
+      }
+    };
 
-  if (authState === 'loading' || authState === 'loggedOut' || !user) {
+    if (authState === 'loggedOut') {
+        checkUserSession();
+    } else if (authState === 'loggedIn') {
+        setIsCheckingSession(false);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authState]);
+
+
+  if (isCheckingSession || authState === 'loading' || !user) {
     return (
-        <div className="flex items-center justify-center min-h-screen bg-transparent">
-            <Loader2 className="h-8 w-8 animate-spin text-primary"/>
-        </div>
+      <div className="flex items-center justify-center min-h-screen bg-transparent">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
     );
   }
 
