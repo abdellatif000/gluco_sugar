@@ -2,7 +2,7 @@
 "use client";
 
 import type { ReactNode } from 'react';
-import { createContext, useContext, useState, useMemo, useCallback } from 'react';
+import { createContext, useContext, useState, useMemo, useCallback, useEffect } from 'react';
 import type { UserProfile, WeightEntry, GlucoseLog, MealType, AuthState, AppUser } from '@/lib/types';
 import { formatISO } from 'date-fns';
 import * as db from '@/app/db-actions';
@@ -16,7 +16,6 @@ interface AppContextType {
   signup: (email: string, password: string, name: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  loadInitialData: (user: AppUser) => Promise<void>;
   updateProfile: (profile: Partial<Omit<UserProfile, 'id' | 'email'>>) => Promise<void>;
   addWeightEntry: (weight: number) => Promise<void>;
   updateWeightEntry: (entry: WeightEntry) => Promise<void>;
@@ -38,7 +37,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [glucoseLogs, setGlucoseLogs] = useState<GlucoseLog[]>([]);
 
   const loadInitialData = useCallback(async (appUser: AppUser) => {
-    setAuthState('loading');
     setUser(appUser);
     try {
       const [userProfile, userWeightHistory, userGlucoseLogs] = await Promise.all([
@@ -53,6 +51,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         setGlucoseLogs(userGlucoseLogs);
         setAuthState('loggedIn');
       } else {
+        // This case might happen if user is deleted from DB but session remains
         await logout();
       }
     } catch (error) {
@@ -61,25 +60,51 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
+  const logout = useCallback(async () => {
+    try {
+      await db.logout();
+    } catch (e) {
+      console.error("Logout failed:", e);
+    }
+    finally {
+      setUser(null);
+      setProfile(null);
+      setWeightHistory([]);
+      setGlucoseLogs([]);
+      setAuthState('loggedOut');
+    }
+  }, []);
+
+  useEffect(() => {
+    const checkUserSession = async () => {
+        try {
+            const sessionUser = await db.checkSession();
+            if (sessionUser) {
+                await loadInitialData(sessionUser);
+            } else {
+                setAuthState('loggedOut');
+            }
+        } catch (error) {
+            console.error("Session check failed:", error);
+            setAuthState('loggedOut');
+        }
+    };
+    checkUserSession();
+  }, [loadInitialData]);
+
+
   const signup = async (email: string, password: string, name: string) => {
+    setAuthState('loading');
     const newUser = await db.signup(email, password, name);
     await loadInitialData(newUser);
   };
 
   const login = async (email: string, password: string) => {
+    setAuthState('loading');
     const loggedInUser = await db.login(email, password);
     await loadInitialData(loggedInUser);
   };
 
-  const logout = async () => {
-    await db.logout();
-    setUser(null);
-    setProfile(null);
-    setWeightHistory([]);
-    setGlucoseLogs([]);
-    setAuthState('loggedOut');
-  };
-  
   const updateProfile = async (newProfileData: Partial<UserProfile>) => {
     if (!user) throw new Error("User not authenticated.");
     const updatedProfile = await db.updateUserProfile(user.id, newProfileData);
@@ -152,7 +177,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     signup,
     login,
     logout,
-    loadInitialData,
     updateProfile,
     addWeightEntry,
     updateWeightEntry,
@@ -162,7 +186,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     updateGlucoseLog,
     deleteGlucoseLog,
     deleteMultipleGlucoseLogs,
-  }), [profile, weightHistory, glucoseLogs, authState, user, loadInitialData]);
+  }), [profile, weightHistory, glucoseLogs, authState, user, logout]);
 
   return (
     <AppContext.Provider value={contextValue}>

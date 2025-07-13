@@ -19,8 +19,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/s
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 import { useApp } from "@/context/app-context";
-import { useEffect, useState } from "react";
-import * as db from '@/app/db-actions';
+import { useEffect } from "react";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -52,31 +51,14 @@ const NavLinks = () => {
 };
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
-  const { authState, logout, user, loadInitialData } = useApp();
+  const { authState, logout, user } = useApp();
   const router = useRouter();
 
   useEffect(() => {
-    const checkUserSession = async () => {
-      try {
-        const sessionUser = await db.checkSession();
-        if (sessionUser) {
-          if (!user || user.id !== sessionUser.id) {
-            await loadInitialData(sessionUser);
-          }
-        } else {
-          router.push('/login');
-        }
-      } catch (error) {
-        console.error("Session check failed:", error);
-        router.push('/login');
-      }
-    };
-
-    if (authState !== 'loggedIn') {
-        checkUserSession();
+    if (authState === 'loggedOut') {
+      router.replace('/login');
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authState]);
+  }, [authState, router]);
 
 
   if (authState === 'loading' || !user) {
