@@ -54,7 +54,7 @@ export default function SignupPage() {
 
   useEffect(() => {
     if (authState === 'loggedIn') {
-      router.push('/');
+      router.push('/dashboard');
     }
   }, [authState, router]);
 
@@ -63,7 +63,6 @@ export default function SignupPage() {
     setIsSubmitting(true);
     try {
       await signup(data.email, data.password, data.name);
-      // router.push('/'); // This is now handled by the useEffect
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -160,3 +159,5 @@ export default function SignupPage() {
     </div>
   );
 }
+
+    

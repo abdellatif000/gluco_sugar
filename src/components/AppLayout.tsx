@@ -24,7 +24,7 @@ import * as db from '@/app/db-actions';
 import type { AppUser } from "@/lib/types";
 
 const navItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/logs", label: "Glucose Logs", icon: BookText },
   { href: "/reports", label: "Reports", icon: BarChart3 },
   { href: "/reminders", label: "Smart Reminders", icon: Sparkles },
@@ -124,7 +124,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="hidden border-r bg-transparent md:block">
         <div className="flex h-full max-h-screen flex-col gap-2 bg-glass rounded-r-lg">
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-            <Link href="/" className="flex items-center gap-2 font-semibold text-primary">
+            <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-primary">
               <HeartPulse className="h-6 w-6" />
               <span className="">GlucoTrack</span>
             </Link>
@@ -155,7 +155,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col p-0 bg-glass-popover">
                <div className="flex h-14 items-center border-b px-4">
-                 <Link href="/" className="flex items-center gap-2 font-semibold text-primary">
+                 <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-primary">
                     <HeartPulse className="h-6 w-6" />
                     <span>GlucoTrack</span>
                  </Link>
@@ -187,3 +187,5 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
+    

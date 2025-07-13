@@ -52,7 +52,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (authState === 'loggedIn') {
-      router.push('/');
+      router.push('/dashboard');
     }
   }, [authState, router]);
 
@@ -61,7 +61,6 @@ export default function LoginPage() {
     setIsSubmitting(true);
     try {
       await login(data.email, data.password);
-      // router.push('/'); // This is now handled by the useEffect
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -145,3 +144,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
+    
