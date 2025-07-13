@@ -59,17 +59,6 @@ export default function DashboardPage() {
     },
   });
   
-  // Redirect if profile is incomplete
-  useEffect(() => {
-    if (profile && (!profile.height || !profile.birthdate)) {
-      toast({
-        title: 'Complete Your Profile',
-        description: "Please provide your height and birthdate to use all features.",
-      });
-      router.push('/profile');
-    }
-  }, [profile, router, toast]);
-
   const latestLog = glucoseLogs[0];
   const previousLog = glucoseLogs[1];
 
@@ -244,5 +233,3 @@ export default function DashboardPage() {
     </AppLayout>
   );
 }
-
-    
