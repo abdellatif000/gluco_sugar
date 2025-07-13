@@ -4,7 +4,7 @@ import { relations } from 'drizzle-orm';
 export const mealTypeEnum = pgEnum('meal_type', ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Fasting']);
 
 export const users = pgTable('users', {
-  id: text('id').notNull().primaryKey().default(`'user_' || ${Date.now()}`),
+  id: text('id').notNull().primaryKey(),
   name: text('name').notNull(),
   email: text('email').notNull().unique(),
   passwordHash: text('password_hash').notNull(),
