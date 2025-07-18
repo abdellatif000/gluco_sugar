@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useMemo, useEffect } from 'react';
+import { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -43,10 +43,11 @@ const glucoseLogSchema = z.object({
   glycemia: z.coerce.number().min(0.1, 'Glycemia is required.'),
   dosage: z.coerce.number().min(0, 'Dosage must be 0 or more.'),
   mealType: z.enum(['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Fasting']),
+  weight: z.coerce.number().positive("Weight must be a positive number.").optional().or(z.literal('')),
 });
 
 export default function DashboardPage() {
-  const { profile, weightHistory, glucoseLogs, addGlucoseLog, user } = useApp();
+  const { profile, weightHistory, glucoseLogs, addGlucoseLog, addWeightEntry, user } = useApp();
   const { toast } = useToast();
   const router = useRouter();
 
@@ -56,6 +57,7 @@ export default function DashboardPage() {
       glycemia: 1.0,
       dosage: 0,
       mealType: 'Fasting',
+      weight: '',
     },
   });
   
@@ -77,20 +79,36 @@ export default function DashboardPage() {
     return calculateBMI(profile.height, latestWeight)
   }, [profile, latestWeight]);
 
-  function onSubmit(values: z.infer<typeof glucoseLogSchema>) {
-    addGlucoseLog({
-      ...values,
-      mealType: values.mealType as MealType,
-    });
-    toast({
-      title: 'Success!',
-      description: 'New glucose log has been added.',
-    });
-    form.reset({
-      glycemia: 1.0,
-      dosage: 0,
-      mealType: 'Fasting',
-    });
+  async function onSubmit(values: z.infer<typeof glucoseLogSchema>) {
+    try {
+        await addGlucoseLog({
+          glycemia: values.glycemia,
+          dosage: values.dosage,
+          mealType: values.mealType as MealType,
+        });
+
+        if (values.weight && typeof values.weight === 'number' && values.weight > 0) {
+            await addWeightEntry(values.weight);
+        }
+        
+        toast({
+          title: 'Success!',
+          description: 'New health data has been added.',
+        });
+
+        form.reset({
+          glycemia: 1.0,
+          dosage: 0,
+          mealType: 'Fasting',
+          weight: ''
+        });
+    } catch (error: any) {
+        toast({
+          title: 'Error',
+          description: 'Failed to add log. ' + error.message,
+          variant: 'destructive',
+        });
+    }
   }
   
   if (!profile) return null; // Or a loading skeleton
@@ -161,16 +179,16 @@ export default function DashboardPage() {
           <CardHeader>
             <div className="flex items-center gap-2">
                 <PlusCircle className="h-6 w-6 text-primary"/>
-                <CardTitle>Add Glucose Log</CardTitle>
+                <CardTitle>Add Health Log</CardTitle>
             </div>
             <CardDescription>
-              Quickly add a new blood glucose reading for today.
+              Quickly add a new reading for today. Weight is optional.
             </CardDescription>
           </CardHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <FormField
                     control={form.control}
                     name="glycemia"
@@ -217,6 +235,19 @@ export default function DashboardPage() {
                             <SelectItem value="Fasting">Fasting</SelectItem>
                           </SelectContent>
                         </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="weight"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Weight (kg)</FormLabel>
+                        <FormControl>
+                          <Input type="number" step="0.1" placeholder="Optional" {...field} />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
