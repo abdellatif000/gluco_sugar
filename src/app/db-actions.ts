@@ -180,25 +180,15 @@ export async function getGlucoseLogs(userId: string): Promise<GlucoseLog[]> {
     }));
 }
 
-export async function addGlucoseLog(userId: string, data: Omit<GlucoseLog, 'id'>): Promise<{newLog: GlucoseLog, newWeightEntry: WeightEntry | null}> {
+export async function addGlucoseLog(userId: string, data: Omit<GlucoseLog, 'id'>): Promise<GlucoseLog> {
     const timestamp = new Date(data.timestamp);
     
-    // Add glucose log
     const newLog = await db.insert(schema.glucoseLogs)
         .values({ id: `gl_${Date.now()}`, userId, ...data, timestamp })
         .returning()
         .then(res => res[0]);
 
-    let newWeightEntry: WeightEntry | null = null;
-    // If weight is provided, also add a weight history entry
-    if (data.weight && data.weight > 0) {
-        newWeightEntry = await addWeightEntry(userId, { weight: data.weight, date: timestamp.toISOString() });
-    }
-
-    return { 
-        newLog: { ...newLog, timestamp: newLog.timestamp.toISOString() },
-        newWeightEntry
-    };
+    return { ...newLog, timestamp: newLog.timestamp.toISOString() };
 }
 
 export async function updateGlucoseLog(log: GlucoseLog): Promise<GlucoseLog> {
@@ -208,7 +198,6 @@ export async function updateGlucoseLog(log: GlucoseLog): Promise<GlucoseLog> {
             dosage: log.dosage,
             mealType: log.mealType,
             timestamp: new Date(log.timestamp),
-            weight: log.weight,
         })
         .where(eq(schema.glucoseLogs.id, log.id))
         .returning().then(res => res[0]);

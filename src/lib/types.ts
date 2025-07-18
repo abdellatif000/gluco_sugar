@@ -7,7 +7,6 @@ export interface GlucoseLog {
   mealType: MealType;
   glycemia: number; // in g/L
   dosage: number; // Novorapide units
-  weight?: number | null; // in kg
 }
 
 export interface WeightEntry {

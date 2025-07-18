@@ -146,13 +146,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       ...log,
       timestamp: log.timestamp || formatISO(new Date()),
     };
-    const { newLog, newWeightEntry } = await db.addGlucoseLog(user.id, newLogData);
+    const newLog = await db.addGlucoseLog(user.id, newLogData);
     
     setGlucoseLogs(prev => [newLog, ...prev].sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
-
-    if (newWeightEntry) {
-      setWeightHistory(prev => [newWeightEntry, ...prev].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-    }
   };
   
   const updateGlucoseLog = async (updatedLog: GlucoseLog) => {

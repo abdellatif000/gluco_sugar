@@ -19,7 +19,6 @@ export const glucoseLogs = pgTable('glucose_logs', {
   mealType: mealTypeEnum('meal_type').notNull(),
   glycemia: real('glycemia').notNull(), // in g/L
   dosage: real('dosage').notNull(), // Novorapide units
-  weight: real('weight'), // in kg, optional
 });
 
 export const weightHistory = pgTable('weight_history', {
