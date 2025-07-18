@@ -89,8 +89,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             setAuthState('loggedOut');
         }
     };
-    checkUserSession();
-  }, [loadInitialData]);
+    if (authState === 'loading') {
+      checkUserSession();
+    }
+  }, [loadInitialData, authState]);
 
 
   const signup = async (email: string, password: string, name: string) => {
@@ -123,7 +125,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const updateWeightEntry = async (updatedEntry: WeightEntry) => {
     if (!user) throw new Error("User not authenticated.");
     const entry = await db.updateWeightEntry(updatedEntry);
-    setWeightHistory(prev => prev.map(e => e.id === entry.id ? entry : e));
+    setWeightHistory(prev => prev.map(e => e.id === entry.id ? entry : e).sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
   };
 
   const deleteWeightEntry = async (id: string) => {
@@ -152,7 +154,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const updateGlucoseLog = async (updatedLog: GlucoseLog) => {
     if (!user) throw new Error("User not authenticated.");
     const newLog = await db.updateGlucoseLog(updatedLog);
-    setGlucoseLogs(prev => prev.map(log => log.id === newLog.id ? newLog : log));
+    setGlucoseLogs(prev => prev.map(log => log.id === newLog.id ? newLog : log).sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
   };
   
   const deleteGlucoseLog = async (id: string) => {
@@ -186,7 +188,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     updateGlucoseLog,
     deleteGlucoseLog,
     deleteMultipleGlucoseLogs,
-  }), [profile, weightHistory, glucoseLogs, authState, user, logout]);
+  }), [profile, weightHistory, glucoseLogs, authState, user, logout, loadInitialData]);
 
   return (
     <AppContext.Provider value={contextValue}>
