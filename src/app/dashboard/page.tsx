@@ -43,6 +43,7 @@ const glucoseLogSchema = z.object({
   glycemia: z.coerce.number().min(0.1, 'Glycemia is required.'),
   dosage: z.coerce.number().min(0, 'Dosage must be 0 or more.'),
   mealType: z.enum(['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Fasting']),
+  weight: z.coerce.number().optional().nullable(),
 });
 
 export default function DashboardPage() {
@@ -56,6 +57,7 @@ export default function DashboardPage() {
       glycemia: 1.0,
       dosage: 0,
       mealType: 'Fasting',
+      weight: undefined,
     },
   });
   
@@ -77,10 +79,17 @@ export default function DashboardPage() {
     return calculateBMI(profile.height, latestWeight)
   }, [profile, latestWeight]);
 
+  useEffect(() => {
+    if (latestWeight) {
+        form.setValue('weight', latestWeight);
+    }
+  }, [latestWeight, form]);
+
   function onSubmit(values: z.infer<typeof glucoseLogSchema>) {
     addGlucoseLog({
       ...values,
       mealType: values.mealType as MealType,
+      weight: values.weight || undefined,
     });
     toast({
       title: 'Success!',
@@ -90,6 +99,7 @@ export default function DashboardPage() {
       glycemia: 1.0,
       dosage: 0,
       mealType: 'Fasting',
+      weight: values.weight || latestWeight,
     });
   }
   
@@ -164,13 +174,13 @@ export default function DashboardPage() {
                 <CardTitle>Add Glucose Log</CardTitle>
             </div>
             <CardDescription>
-              Quickly add a new blood glucose reading for today.
+              Quickly add a new blood glucose reading for today. You can optionally add your weight too.
             </CardDescription>
           </CardHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <FormField
                     control={form.control}
                     name="glycemia"
@@ -192,6 +202,19 @@ export default function DashboardPage() {
                         <FormLabel>Novorapide Dosage</FormLabel>
                         <FormControl>
                           <Input type="number" step="1" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                   <FormField
+                    control={form.control}
+                    name="weight"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Weight (kg)</FormLabel>
+                        <FormControl>
+                          <Input type="number" step="0.1" {...field} value={field.value ?? ''} placeholder="Optional"/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>

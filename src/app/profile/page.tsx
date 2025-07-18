@@ -21,14 +21,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Loader2, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
-import type { WeightEntry } from '@/lib/types';
-import { Checkbox } from "@/components/ui/checkbox";
-import { Separator } from '@/components/ui/separator';
+import { Loader2 } from 'lucide-react';
 
 const profileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -38,62 +31,30 @@ const profileSchema = z.object({
   }).nullable(),
 });
 
-const weightSchema = z.object({
-  weight: z.coerce.number().min(1, "Weight must be positive."),
-});
-
-const editWeightSchema = z.object({
-  id: z.string(),
-  date: z.string().refine((val) => !val || !isNaN(Date.parse(val)), {
-    message: "Invalid date format.",
-  }),
-  weight: z.coerce.number().min(1, "Weight must be positive."),
-});
-
 export default function ProfilePage() {
-  const { profile, weightHistory, updateProfile, addWeightEntry, updateWeightEntry, deleteWeightEntry, deleteMultipleWeightEntries } = useApp();
+  const { profile, weightHistory, updateProfile } = useApp();
   const { toast } = useToast();
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   
-  const [editingWeight, setEditingWeight] = useState<WeightEntry | null>(null);
-  const [deletingWeightId, setDeletingWeightId] = useState<string | null>(null);
-  const [selectedWeightIds, setSelectedWeightIds] = useState<string[]>([]);
-
   const latestWeight = weightHistory[0]?.weight;
   const bmi = (profile && profile.height && latestWeight) ? calculateBMI(profile.height, latestWeight) : null;
   const age = (profile && profile.birthdate) ? calculateAge(profile.birthdate) : null;
 
   const profileForm = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
-    defaultValues: { name: '', height: 0, birthdate: '' }
-  });
-
-  const weightForm = useForm<z.infer<typeof weightSchema>>({
-    resolver: zodResolver(weightSchema),
-    defaultValues: { weight: 0 }
-  });
-  
-  const editWeightForm = useForm<z.infer<typeof editWeightSchema>>({
-    resolver: zodResolver(editWeightSchema),
-    defaultValues: { id: '', date: '', weight: 0 },
+    defaultValues: { name: '', height: null, birthdate: null }
   });
 
   useEffect(() => {
-    if (profile) {
+    if (profile && !isEditingProfile) {
       profileForm.reset({
         name: profile.name,
         height: profile.height,
-        birthdate: profile.birthdate ? format(new Date(profile.birthdate), 'yyyy-MM-dd') : '',
+        birthdate: profile.birthdate ? format(new Date(profile.birthdate), 'yyyy-MM-dd') : null,
       });
     }
   }, [profile, isEditingProfile, profileForm]);
-
-  useEffect(() => {
-    if(latestWeight) {
-        weightForm.reset({ weight: latestWeight || 0 });
-    }
-  }, [latestWeight, weightForm]);
 
   const onProfileSubmit = async (data: z.infer<typeof profileSchema>) => {
     setIsSaving(true);
@@ -106,63 +67,6 @@ export default function ProfilePage() {
     } finally {
         setIsSaving(false);
     }
-  };
-
-  const onWeightSubmit = (data: z.infer<typeof weightSchema>) => {
-    addWeightEntry(data.weight);
-    toast({ title: 'Success', description: 'New weight entry added.' });
-    weightForm.reset({ weight: data.weight });
-  };
-
-  const handleEditWeight = (entry: WeightEntry) => {
-    setEditingWeight(entry);
-    editWeightForm.reset({
-      id: entry.id,
-      date: format(new Date(entry.date), 'yyyy-MM-dd'),
-      weight: entry.weight
-    });
-  };
-
-  const onEditWeightSubmit = (data: z.infer<typeof editWeightSchema>) => {
-    updateWeightEntry({
-        ...data,
-        date: new Date(data.date).toISOString()
-    });
-    toast({ title: 'Success', description: 'Weight entry updated.' });
-    setEditingWeight(null);
-  };
-  
-  const confirmDeleteWeight = () => {
-    if (deletingWeightId) {
-      deleteWeightEntry(deletingWeightId);
-      toast({ title: 'Success', description: 'Weight entry deleted.' });
-      setDeletingWeightId(null);
-    }
-  };
-  
-  const handleSelectWeight = (id: string, checked: boolean | string) => {
-    if (checked) {
-        setSelectedWeightIds((prev) => [...prev, id]);
-    } else {
-        setSelectedWeightIds((prev) => prev.filter((weightId) => weightId !== id));
-    }
-  };
-
-  const handleSelectAllWeights = (checked: boolean | string) => {
-      if (checked) {
-          setSelectedWeightIds(weightHistory.map((entry) => entry.id));
-      } else {
-          setSelectedWeightIds([]);
-      }
-  };
-
-  const handleDeleteSelected = () => {
-      deleteMultipleWeightEntries(selectedWeightIds);
-      toast({
-          title: 'Success',
-          description: `${selectedWeightIds.length} weight(s) deleted.`,
-      });
-      setSelectedWeightIds([]);
   };
 
   if (!profile) return (
@@ -276,154 +180,7 @@ export default function ProfilePage() {
                 </CardContent>
             </Card>
         </div>
-
-        <Card className="bg-glass">
-          <CardHeader>
-            <CardTitle>Weight Management</CardTitle>
-            <CardDescription>Track your weekly weight.</CardDescription>
-          </CardHeader>
-          <Form {...weightForm}>
-            <form onSubmit={weightForm.handleSubmit(onWeightSubmit)}>
-                <CardContent className="space-y-4">
-                    <FormField
-                        control={weightForm.control}
-                        name="weight"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>New Weight Entry (kg)</FormLabel>
-                            <FormControl>
-                                <Input type="number" step="0.1" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                    <Separator />
-                    <div className="max-h-60 overflow-y-auto">
-                        <Table>
-                            <TableHeader>
-                            <TableRow>
-                                <TableHead className="w-[50px]">
-                                  <Checkbox
-                                      checked={selectedWeightIds.length === weightHistory.length && weightHistory.length > 0}
-                                      onCheckedChange={handleSelectAllWeights}
-                                      aria-label="Select all"
-                                  />
-                                </TableHead>
-                                <TableHead>Date</TableHead>
-                                <TableHead className="text-right">Weight (kg)</TableHead>
-                                <TableHead><span className="sr-only">Actions</span></TableHead>
-                            </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                            {weightHistory.map((entry) => (
-                                <TableRow key={entry.id} data-state={selectedWeightIds.includes(entry.id) && "selected"} className="data-[state=selected]:bg-muted">
-                                <TableCell>
-                                    <Checkbox
-                                        checked={selectedWeightIds.includes(entry.id)}
-                                        onCheckedChange={(checked) => handleSelectWeight(entry.id, checked)}
-                                        aria-label={`Select weight entry from ${format(new Date(entry.date), 'PPP')}`}
-                                    />
-                                </TableCell>
-                                <TableCell>{format(new Date(entry.date), 'PPP')}</TableCell>
-                                <TableCell className="text-right">{entry.weight.toFixed(1)}</TableCell>
-                                <TableCell className="text-right">
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button aria-haspopup="true" size="icon" variant="ghost">
-                                            <MoreHorizontal className="h-4 w-4" />
-                                            <span className="sr-only">Toggle menu</span>
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onSelect={() => handleEditWeight(entry)} className="flex items-center gap-2">
-                                                <Pencil className="h-4 w-4" /> Edit
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem onSelect={() => setDeletingWeightId(entry.id)} className="flex items-center gap-2 text-destructive">
-                                                <Trash2 className="h-4 w-4" /> Delete
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </TableCell>
-                                </TableRow>
-                            ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-                </CardContent>
-                <CardFooter className="gap-2">
-                    <Button type="submit">Add Weight</Button>
-                    {selectedWeightIds.length > 0 && (
-                        <Button variant="destructive" onClick={handleDeleteSelected}>
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            Delete ({selectedWeightIds.length})
-                        </Button>
-                    )}
-                </CardFooter>
-            </form>
-          </Form>
-        </Card>
       </div>
-
-      <Dialog open={!!editingWeight} onOpenChange={(open) => !open && setEditingWeight(null)}>
-        <DialogContent className="bg-glass-popover">
-            <DialogHeader>
-                <DialogTitle>Edit Weight Entry</DialogTitle>
-                <DialogDescription>Update the weight and date for this entry.</DialogDescription>
-            </DialogHeader>
-            <Form {...editWeightForm}>
-                <form onSubmit={editWeightForm.handleSubmit(onEditWeightSubmit)} className="space-y-4 py-4">
-                    <FormField
-                        control={editWeightForm.control}
-                        name="date"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Date</FormLabel>
-                                <FormControl>
-                                    <Input type="date" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={editWeightForm.control}
-                        name="weight"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Weight (kg)</FormLabel>
-                                <FormControl>
-                                    <Input type="number" step="0.1" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <DialogFooter>
-                        <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
-                        <Button type="submit">Save Changes</Button>
-                    </DialogFooter>
-                </form>
-            </Form>
-        </DialogContent>
-      </Dialog>
-      
-      <AlertDialog open={!!deletingWeightId} onOpenChange={(open) => !open && setDeletingWeightId(null)}>
-        <AlertDialogContent className="bg-glass-popover">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the weight entry.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setDeletingWeightId(null)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDeleteWeight}>Continue</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </AppLayout>
   );
 }
-
-    

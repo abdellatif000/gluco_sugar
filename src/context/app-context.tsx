@@ -36,6 +36,21 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [weightHistory, setWeightHistory] = useState<WeightEntry[]>([]);
   const [glucoseLogs, setGlucoseLogs] = useState<GlucoseLog[]>([]);
 
+  const logout = useCallback(async () => {
+    try {
+      await db.logout();
+    } catch (e) {
+      console.error("Logout failed:", e);
+    }
+    finally {
+      setUser(null);
+      setProfile(null);
+      setWeightHistory([]);
+      setGlucoseLogs([]);
+      setAuthState('loggedOut');
+    }
+  }, []);
+
   const loadInitialData = useCallback(async (appUser: AppUser) => {
     setUser(appUser);
     try {
@@ -51,29 +66,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         setGlucoseLogs(userGlucoseLogs);
         setAuthState('loggedIn');
       } else {
-        // This case might happen if user is deleted from DB but session remains
         await logout();
       }
     } catch (error) {
       console.error("Failed to load user data:", error);
       await logout();
     }
-  }, []);
-
-  const logout = useCallback(async () => {
-    try {
-      await db.logout();
-    } catch (e) {
-      console.error("Logout failed:", e);
-    }
-    finally {
-      setUser(null);
-      setProfile(null);
-      setWeightHistory([]);
-      setGlucoseLogs([]);
-      setAuthState('loggedOut');
-    }
-  }, []);
+  }, [logout]);
 
   useEffect(() => {
     const checkUserSession = async () => {
@@ -147,8 +146,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       ...log,
       timestamp: log.timestamp || formatISO(new Date()),
     };
-    const newLog = await db.addGlucoseLog(user.id, newLogData);
+    const { newLog, newWeightEntry } = await db.addGlucoseLog(user.id, newLogData);
+    
     setGlucoseLogs(prev => [newLog, ...prev].sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
+
+    if (newWeightEntry) {
+      setWeightHistory(prev => [newWeightEntry, ...prev].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+    }
   };
   
   const updateGlucoseLog = async (updatedLog: GlucoseLog) => {
@@ -188,6 +192,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     updateGlucoseLog,
     deleteGlucoseLog,
     deleteMultipleGlucoseLogs,
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [profile, weightHistory, glucoseLogs, authState, user, logout, loadInitialData]);
 
   return (
