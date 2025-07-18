@@ -50,16 +50,6 @@ const editWeightSchema = z.object({
   weight: z.coerce.number().min(1, "Weight must be positive."),
 });
 
-const DetailRow = ({ label, value, isEditing, children }: { label: string, value: React.ReactNode, isEditing: boolean, children: React.ReactNode }) => (
-    <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-2 md:gap-4">
-        <FormLabel className="text-muted-foreground col-span-1">{label}</FormLabel>
-        <div className="md:col-span-2">
-            {isEditing ? children : <div className="text-sm py-2">{value}</div>}
-        </div>
-    </div>
-);
-
-
 export default function ProfilePage() {
   const { profile, weightHistory, updateProfile, addWeightEntry, updateWeightEntry, deleteWeightEntry, deleteMultipleWeightEntries } = useApp();
   const { toast } = useToast();
@@ -108,6 +98,13 @@ export default function ProfilePage() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile, latestWeight]);
+  
+  useEffect(() => {
+    if (isEditingProfile && profile) {
+      resetProfileForm();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditingProfile, profile]);
 
   const onProfileSubmit = async (data: z.infer<typeof profileSchema>) => {
     setIsSaving(true);
@@ -192,65 +189,87 @@ export default function ProfilePage() {
       <div className="grid gap-6 md:grid-cols-2">
         <div className="flex flex-col gap-6">
             <Card className="bg-glass">
-                <CardHeader>
-                <CardTitle>User Details</CardTitle>
-                <CardDescription>Your personal information.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Form {...profileForm}>
-                        <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-4">
-                           <FormField
+                <Form {...profileForm}>
+                    <form onSubmit={profileForm.handleSubmit(onProfileSubmit)}>
+                        <CardHeader>
+                            <CardTitle>User Details</CardTitle>
+                            <CardDescription>Your personal information.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                           {isEditingProfile ? (
+                            <>
+                              <FormField
                                 control={profileForm.control}
                                 name="name"
                                 render={({ field }) => (
-                                    <DetailRow label="Name" isEditing={isEditingProfile} value={profile.name}>
+                                    <FormItem>
+                                        <FormLabel>Name</FormLabel>
                                         <FormControl>
                                             <Input {...field} />
                                         </FormControl>
-                                    </DetailRow>
+                                        <FormMessage />
+                                    </FormItem>
                                 )}
-                            />
-                            <FormField
+                               />
+                               <FormField
                                 control={profileForm.control}
                                 name="birthdate"
                                 render={({ field }) => (
-                                    <DetailRow label="Birthdate" isEditing={isEditingProfile} value={profile.birthdate ? `${format(new Date(profile.birthdate), 'PPP')} (${age} years old)` : 'Not set'}>
-                                         <FormControl>
+                                     <FormItem>
+                                        <FormLabel>Birthdate</FormLabel>
+                                        <FormControl>
                                             <Input type="date" {...field} value={field.value ?? ''}/>
-                                         </FormControl>
-                                    </DetailRow>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
                                 )}
-                            />
-                            <FormField
+                               />
+                               <FormField
                                 control={profileForm.control}
                                 name="height"
                                 render={({ field }) => (
-                                    <DetailRow label="Height (cm)" isEditing={isEditingProfile} value={(profile.height && profile.height > 0) ? profile.height : 'Not set'}>
+                                    <FormItem>
+                                        <FormLabel>Height (cm)</FormLabel>
                                         <FormControl>
                                             <Input type="number" {...field} value={field.value ?? ''} />
                                         </FormControl>
-                                    </DetailRow>
+                                        <FormMessage />
+                                    </FormItem>
                                 )}
-                            />
-                            
-                            <FormMessage>{profileForm.formState.errors.name?.message || profileForm.formState.errors.birthdate?.message || profileForm.formState.errors.height?.message}</FormMessage>
-
-                            <div className="flex justify-end gap-2 pt-2">
-                                {isEditingProfile ? (
-                                    <>
-                                        <Button variant="outline" onClick={() => { setIsEditingProfile(false); resetProfileForm(); }}>Cancel</Button>
-                                        <Button type="submit" disabled={isSaving}>
-                                            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                                            Save
-                                        </Button>
-                                    </>
-                                ) : (
-                                    <Button variant="outline" onClick={() => setIsEditingProfile(true)}>Edit Profile</Button>
-                                )}
-                            </div>
-                        </form>
-                    </Form>
-                </CardContent>
+                               />
+                            </>
+                           ) : (
+                             <div className="space-y-3">
+                                <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-2 md:gap-4">
+                                    <FormLabel className="text-muted-foreground col-span-1">Name</FormLabel>
+                                    <div className="md:col-span-2 text-sm py-2">{profile.name}</div>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-2 md:gap-4">
+                                    <FormLabel className="text-muted-foreground col-span-1">Birthdate</FormLabel>
+                                    <div className="md:col-span-2 text-sm py-2">{profile.birthdate ? `${format(new Date(profile.birthdate), 'PPP')} (${age} years old)` : 'Not set'}</div>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-2 md:gap-4">
+                                    <FormLabel className="text-muted-foreground col-span-1">Height (cm)</FormLabel>
+                                    <div className="md:col-span-2 text-sm py-2">{(profile.height && profile.height > 0) ? profile.height : 'Not set'}</div>
+                                </div>
+                             </div>
+                           )}
+                        </CardContent>
+                        <CardFooter className="justify-end gap-2">
+                            {isEditingProfile ? (
+                                <>
+                                    <Button variant="outline" onClick={() => setIsEditingProfile(false)}>Cancel</Button>
+                                    <Button type="submit" disabled={isSaving}>
+                                        {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                                        Save
+                                    </Button>
+                                </>
+                            ) : (
+                                <Button variant="outline" onClick={() => setIsEditingProfile(true)}>Edit Profile</Button>
+                            )}
+                        </CardFooter>
+                    </form>
+                </Form>
             </Card>
 
             <Card className="bg-glass">
@@ -417,5 +436,3 @@ export default function ProfilePage() {
     </AppLayout>
   );
 }
-
-    
