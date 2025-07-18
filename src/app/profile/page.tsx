@@ -87,20 +87,13 @@ export default function ProfilePage() {
         birthdate: profile.birthdate ? format(new Date(profile.birthdate), 'yyyy-MM-dd') : '',
       });
     }
+  }, [profile, isEditingProfile, profileForm]);
+
+  useEffect(() => {
     if(latestWeight) {
         weightForm.reset({ weight: latestWeight || 0 });
     }
-  }, [profile, latestWeight, profileForm, weightForm]);
-  
-  useEffect(() => {
-    if (isEditingProfile && profile) {
-      profileForm.reset({
-        name: profile.name,
-        height: profile.height,
-        birthdate: profile.birthdate ? format(new Date(profile.birthdate), 'yyyy-MM-dd') : '',
-      });
-    }
-  }, [isEditingProfile, profile, profileForm]);
+  }, [latestWeight, weightForm]);
 
   const onProfileSubmit = async (data: z.infer<typeof profileSchema>) => {
     setIsSaving(true);
@@ -432,3 +425,5 @@ export default function ProfilePage() {
     </AppLayout>
   );
 }
+
+    
