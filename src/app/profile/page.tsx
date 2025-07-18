@@ -61,7 +61,7 @@ export default function ProfilePage() {
   const [selectedWeightIds, setSelectedWeightIds] = useState<string[]>([]);
 
   const latestWeight = weightHistory[0]?.weight;
-  const bmi = (profile && profile.height) ? calculateBMI(profile.height, latestWeight) : null;
+  const bmi = (profile && profile.height && latestWeight) ? calculateBMI(profile.height, latestWeight) : null;
   const age = (profile && profile.birthdate) ? calculateAge(profile.birthdate) : null;
 
   const profileForm = useForm<z.infer<typeof profileSchema>>({
@@ -79,7 +79,7 @@ export default function ProfilePage() {
     defaultValues: { id: '', date: '', weight: 0 },
   });
 
-  const resetProfileForm = () => {
+  useEffect(() => {
     if (profile) {
       profileForm.reset({
         name: profile.name,
@@ -87,24 +87,20 @@ export default function ProfilePage() {
         birthdate: profile.birthdate ? format(new Date(profile.birthdate), 'yyyy-MM-dd') : '',
       });
     }
-  };
-
-  useEffect(() => {
-    if (profile) {
-      resetProfileForm();
-    }
     if(latestWeight) {
         weightForm.reset({ weight: latestWeight || 0 });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile, latestWeight]);
+  }, [profile, latestWeight, profileForm, weightForm]);
   
   useEffect(() => {
     if (isEditingProfile && profile) {
-      resetProfileForm();
+      profileForm.reset({
+        name: profile.name,
+        height: profile.height,
+        birthdate: profile.birthdate ? format(new Date(profile.birthdate), 'yyyy-MM-dd') : '',
+      });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEditingProfile, profile]);
+  }, [isEditingProfile, profile, profileForm]);
 
   const onProfileSubmit = async (data: z.infer<typeof profileSchema>) => {
     setIsSaving(true);
@@ -258,7 +254,7 @@ export default function ProfilePage() {
                         <CardFooter className="justify-end gap-2">
                             {isEditingProfile ? (
                                 <>
-                                    <Button variant="outline" onClick={() => setIsEditingProfile(false)}>Cancel</Button>
+                                    <Button type="button" variant="outline" onClick={() => setIsEditingProfile(false)}>Cancel</Button>
                                     <Button type="submit" disabled={isSaving}>
                                         {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                                         Save
@@ -282,7 +278,7 @@ export default function ProfilePage() {
                         <span className="text-muted-foreground">BMI:</span>
                         <span className="font-bold text-xl">{bmi || 'N/A'}</span>
                     </div>
-                    {bmi && profile.height && <p className="text-xs text-muted-foreground">(Based on {latestWeight}kg & {profile.height}cm)</p>}
+                    {bmi && profile.height && latestWeight && <p className="text-xs text-muted-foreground">(Based on {latestWeight}kg & {profile.height}cm)</p>}
                     {!bmi && <p className="text-sm text-muted-foreground pt-2">Enter your weight & height to calculate BMI.</p>}
                 </CardContent>
             </Card>
