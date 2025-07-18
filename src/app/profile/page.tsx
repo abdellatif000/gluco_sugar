@@ -265,7 +265,7 @@ export default function ProfilePage() {
                                     </Button>
                                 </>
                             ) : (
-                                <Button variant="outline" onClick={() => setIsEditingProfile(true)}>Edit Profile</Button>
+                                <Button type="button" variant="outline" onClick={() => setIsEditingProfile(true)}>Edit Profile</Button>
                             )}
                         </CardFooter>
                     </form>
