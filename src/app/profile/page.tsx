@@ -44,7 +44,9 @@ const weightSchema = z.object({
 
 const editWeightSchema = z.object({
   id: z.string(),
-  date: z.string(),
+  date: z.string().refine((val) => !val || !isNaN(Date.parse(val)), {
+    message: "Invalid date format.",
+  }),
   weight: z.coerce.number().min(1, "Weight must be positive."),
 });
 
@@ -130,13 +132,16 @@ export default function ProfilePage() {
     setEditingWeight(entry);
     editWeightForm.reset({
       id: entry.id,
-      date: entry.date,
+      date: format(new Date(entry.date), 'yyyy-MM-dd'),
       weight: entry.weight
     });
   };
 
   const onEditWeightSubmit = (data: z.infer<typeof editWeightSchema>) => {
-    updateWeightEntry(data);
+    updateWeightEntry({
+        ...data,
+        date: new Date(data.date).toISOString()
+    });
     toast({ title: 'Success', description: 'Weight entry updated.' });
     setEditingWeight(null);
   };
@@ -356,10 +361,23 @@ export default function ProfilePage() {
         <DialogContent className="bg-glass-popover">
             <DialogHeader>
                 <DialogTitle>Edit Weight Entry</DialogTitle>
-                <DialogDescription>Update the weight for {editingWeight ? format(new Date(editingWeight.date), 'PPP') : ''}.</DialogDescription>
+                <DialogDescription>Update the weight and date for this entry.</DialogDescription>
             </DialogHeader>
             <Form {...editWeightForm}>
                 <form onSubmit={editWeightForm.handleSubmit(onEditWeightSubmit)} className="space-y-4 py-4">
+                    <FormField
+                        control={editWeightForm.control}
+                        name="date"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Date</FormLabel>
+                                <FormControl>
+                                    <Input type="date" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
                     <FormField
                         control={editWeightForm.control}
                         name="weight"
@@ -399,3 +417,5 @@ export default function ProfilePage() {
     </AppLayout>
   );
 }
+
+    
